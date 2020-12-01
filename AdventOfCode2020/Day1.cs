@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace AdventOfCode2020
@@ -9,7 +10,7 @@ namespace AdventOfCode2020
         [Test]
         public void Puzzle1()
         {
-            Assert.AreEqual(73371, ExpenseChecksum(Puzzle1Input));
+            Assert.AreEqual(73371, ExpenseChecksum2(Day1Input));
         }
 
         [Test]
@@ -25,13 +26,35 @@ namespace AdventOfCode2020
                 1456
             };
 
-            Assert.AreEqual(514579, ExpenseChecksum(expenses));
+            Assert.AreEqual(514579, ExpenseChecksum2(expenses));
         }
 
-        private static int ExpenseChecksum(int[] expenses)
+        [Test]
+        public void Puzzle2()
         {
-            for (var i = 0; i < expenses.Length; i++)
-            for (var j = i + 1; j < expenses.Length; j++)
+            Assert.AreEqual(127642310, ExpenseChecksum3(Day1Input));
+        }
+
+        [Test]
+        public void Puzzle2Sample()
+        {
+            int[] expenses =
+            {
+                1721,
+                979,
+                366,
+                299,
+                675,
+                1456
+            };
+
+            Assert.AreEqual(241861950, ExpenseChecksum3(expenses));
+        }
+
+        private static int ExpenseChecksum2(IReadOnlyList<int> expenses)
+        {
+            for (var i = 0; i < expenses.Count; i++)
+            for (var j = i + 1; j < expenses.Count; j++)
             {
                 var e1 = expenses[i];
                 var e2 = expenses[j];
@@ -44,7 +67,25 @@ namespace AdventOfCode2020
             throw new InvalidOperationException("Can't find checksum");
         }
 
-        private static readonly int[] Puzzle1Input =
+        private static int ExpenseChecksum3(IReadOnlyList<int> expenses)
+        {
+            for (var i = 0; i < expenses.Count; i++)
+            for (var j = i + 1; j < expenses.Count; j++)
+            for (var k = j + 1; k < expenses.Count; k++)
+            {
+                var e1 = expenses[i];
+                var e2 = expenses[j];
+                var e3 = expenses[k];
+                if (e1 + e2 + e3 == 2020)
+                {
+                    return e1 * e2 * e3;
+                }
+            }
+
+            throw new InvalidOperationException("Can't find checksum");
+        }
+
+        private static readonly int[] Day1Input =
         {
             1322,
             1211,
