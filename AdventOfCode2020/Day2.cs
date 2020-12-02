@@ -105,8 +105,10 @@ namespace AdventOfCode2020
 
             public static TobogganRentalPasswordPolicy Create(string policy)
             {
-                var (index1, index2, ch) = PolicyParser.Parse(policy);
-                return new TobogganRentalPasswordPolicy(index1 - 1, index2 - 1, ch);
+                var (position1, position2, ch) = PolicyParser.Parse(policy);
+                var index1 = position1 - 1;
+                var index2 = position2 - 1;
+                return new TobogganRentalPasswordPolicy(index1, index2, ch);
             }
 
             private TobogganRentalPasswordPolicy(int index1, int index2, char ch) => (_index1, _index2, _ch) = (index1, index2, ch);
