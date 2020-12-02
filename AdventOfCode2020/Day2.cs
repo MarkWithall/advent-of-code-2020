@@ -33,33 +33,31 @@ namespace AdventOfCode2020
             Assert.AreEqual(1, ValidTobogganPasswordCount(Day2SampleInput));
         }
 
-        private static int ValidSledPasswordCount(IEnumerable<string> inputs)
-        {
-            return inputs.Count(SledPasswordIsValid);
+        private static int ValidSledPasswordCount(IEnumerable<string> inputs) =>
+            ValidPasswordCount(inputs, SledRentalPasswordPolicy.Create);
 
-            static bool SledPasswordIsValid(string inputString)
-            {
-                var parts = inputString.Split(": ");
-                var policy = SledRentalPasswordPolicy.Create(parts[0]);
-                var password = parts[1];
-                return policy.IsValid(password);
-            }
-        }
+        private static int ValidTobogganPasswordCount(IEnumerable<string> inputs) =>
+            ValidPasswordCount(inputs, TobogganRentalPasswordPolicy.Create);
 
-        private static int ValidTobogganPasswordCount(IEnumerable<string> inputs)
+        private static int ValidPasswordCount(IEnumerable<string> inputs, Func<string, IPolicy> createPolicy)
         {
             return inputs.Count(TobogganPasswordIsValid);
 
-            static bool TobogganPasswordIsValid(string inputString)
+            bool TobogganPasswordIsValid(string inputString)
             {
                 var parts = inputString.Split(": ");
-                var policy = TobogganRentalPasswordPolicy.Create(parts[0]);
+                var policy = createPolicy(parts[0]);
                 var password = parts[1];
                 return policy.IsValid(password);
             }
         }
 
-        private sealed class SledRentalPasswordPolicy
+        private interface IPolicy
+        {
+            bool IsValid(string password);
+        }
+
+        private sealed class SledRentalPasswordPolicy : IPolicy
         {
             private static readonly Regex PolicyRegex = new Regex(@"^(?<min>\d+)\-(?<max>\d+) (?<ch>[a-z])$", RegexOptions.Compiled);
 
@@ -90,7 +88,7 @@ namespace AdventOfCode2020
             }
         }
 
-        private sealed class TobogganRentalPasswordPolicy
+        private sealed class TobogganRentalPasswordPolicy : IPolicy
         {
             private static readonly Regex PolicyRegex = new Regex(@"^(?<index1>\d+)\-(?<index2>\d+) (?<ch>[a-z])$", RegexOptions.Compiled);
 
