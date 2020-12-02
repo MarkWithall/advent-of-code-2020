@@ -57,26 +57,35 @@ namespace AdventOfCode2020
             bool IsValid(string password);
         }
 
+        private static class PolicyParser
+        {
+            private static readonly Regex PolicyRegex = new Regex(@"^(?<i1>\d+)\-(?<i2>\d+) (?<ch>[a-z])$", RegexOptions.Compiled);
+
+            public static (int i1, int i2, char ch) Parse(string policyString)
+            {
+                var match = PolicyRegex.Match(policyString);
+                if (match.Success)
+                {
+                    var i1 = int.Parse(match.Groups["i1"].Value);
+                    var i2 = int.Parse(match.Groups["i2"].Value);
+                    var ch = match.Groups["ch"].Value[0];
+                    return (i1, i2, ch);
+                }
+
+                throw new ArgumentException("Incorrect policy format", nameof(policyString));
+            }
+        }
+
         private sealed class SledRentalPasswordPolicy : IPolicy
         {
-            private static readonly Regex PolicyRegex = new Regex(@"^(?<min>\d+)\-(?<max>\d+) (?<ch>[a-z])$", RegexOptions.Compiled);
-
             private readonly int _min;
             private readonly int _max;
             private readonly char _ch;
 
             public static SledRentalPasswordPolicy Create(string policy)
             {
-                var match = PolicyRegex.Match(policy);
-                if (match.Success)
-                {
-                    var min = int.Parse(match.Groups["min"].Value);
-                    var max = int.Parse(match.Groups["max"].Value);
-                    var ch = match.Groups["ch"].Value[0];
-                    return new SledRentalPasswordPolicy(min, max, ch);
-                }
-
-                throw new ArgumentException("Incorrect policy format", nameof(policy));
+                var (min, max, ch) = PolicyParser.Parse(policy);
+                return new SledRentalPasswordPolicy(min, max, ch);
             }
 
             private SledRentalPasswordPolicy(int min, int max, char ch) => (_min, _max, _ch) = (min, max, ch);
@@ -90,24 +99,14 @@ namespace AdventOfCode2020
 
         private sealed class TobogganRentalPasswordPolicy : IPolicy
         {
-            private static readonly Regex PolicyRegex = new Regex(@"^(?<index1>\d+)\-(?<index2>\d+) (?<ch>[a-z])$", RegexOptions.Compiled);
-
             private readonly int _index1;
             private readonly int _index2;
             private readonly char _ch;
 
             public static TobogganRentalPasswordPolicy Create(string policy)
             {
-                var match = PolicyRegex.Match(policy);
-                if (match.Success)
-                {
-                    var index1 = int.Parse(match.Groups["index1"].Value) - 1;
-                    var index2 = int.Parse(match.Groups["index2"].Value) - 1;
-                    var ch = match.Groups["ch"].Value[0];
-                    return new TobogganRentalPasswordPolicy(index1, index2, ch);
-                }
-
-                throw new ArgumentException("Incorrect policy format", nameof(policy));
+                var (index1, index2, ch) = PolicyParser.Parse(policy);
+                return new TobogganRentalPasswordPolicy(index1 - 1, index2 - 1, ch);
             }
 
             private TobogganRentalPasswordPolicy(int index1, int index2, char ch) => (_index1, _index2, _ch) = (index1, index2, ch);
