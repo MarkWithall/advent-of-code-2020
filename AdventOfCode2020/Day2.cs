@@ -10,13 +10,13 @@ namespace AdventOfCode2020
     public class Day2
     {
         [Test]
-        public void Puzzle1()
+        public void Part1()
         {
             Assert.AreEqual(383, ValidSeldPasswordCount(Day2Input));
         }
 
         [Test]
-        public void Puzzle1Sample()
+        public void Part1Sample()
         {
             string[] inputs =
             {
@@ -29,13 +29,13 @@ namespace AdventOfCode2020
         }
 
         [Test]
-        public void Puzzle2()
+        public void Part2()
         {
             Assert.AreEqual(272, ValidTobogganPasswordCount(Day2Input));
         }
 
         [Test]
-        public void Puzzle2Sample()
+        public void Part2Sample()
         {
             string[] inputs =
             {

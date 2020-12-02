@@ -8,13 +8,13 @@ namespace AdventOfCode2020
     public class Day1
     {
         [Test]
-        public void Puzzle1()
+        public void Part1()
         {
             Assert.AreEqual(73371, ExpenseChecksum2(Day1Input));
         }
 
         [Test]
-        public void Puzzle1Sample()
+        public void Part1Sample()
         {
             int[] expenses =
             {
@@ -30,13 +30,13 @@ namespace AdventOfCode2020
         }
 
         [Test]
-        public void Puzzle2()
+        public void Part2()
         {
             Assert.AreEqual(127642310, ExpenseChecksum3(Day1Input));
         }
 
         [Test]
-        public void Puzzle2Sample()
+        public void Part2Sample()
         {
             int[] expenses =
             {
