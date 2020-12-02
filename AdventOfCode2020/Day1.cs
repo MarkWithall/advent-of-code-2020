@@ -16,17 +16,7 @@ namespace AdventOfCode2020
         [Test]
         public void Part1Sample()
         {
-            int[] expenses =
-            {
-                1721,
-                979,
-                366,
-                299,
-                675,
-                1456
-            };
-
-            Assert.AreEqual(514579, ExpenseChecksum2(expenses));
+            Assert.AreEqual(514579, ExpenseChecksum2(Day1SampleInput));
         }
 
         [Test]
@@ -38,17 +28,7 @@ namespace AdventOfCode2020
         [Test]
         public void Part2Sample()
         {
-            int[] expenses =
-            {
-                1721,
-                979,
-                366,
-                299,
-                675,
-                1456
-            };
-
-            Assert.AreEqual(241861950, ExpenseChecksum3(expenses));
+            Assert.AreEqual(241861950, ExpenseChecksum3(Day1SampleInput));
         }
 
         private static int ExpenseChecksum2(IReadOnlyList<int> expenses)
@@ -84,6 +64,16 @@ namespace AdventOfCode2020
 
             throw new InvalidOperationException("Can't find checksum");
         }
+
+        private static readonly int[] Day1SampleInput =
+        {
+            1721,
+            979,
+            366,
+            299,
+            675,
+            1456
+        };
 
         private static readonly int[] Day1Input =
         {
