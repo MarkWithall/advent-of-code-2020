@@ -113,9 +113,7 @@ namespace AdventOfCode2020
 
             private TobogganRentalPasswordPolicy(int index1, int index2, char ch) => (_index1, _index2, _ch) = (index1, index2, ch);
 
-            public bool IsValid(string password) =>
-                (password[_index1] == _ch || password[_index2] == _ch) &&
-                password[_index1] != password[_index2];
+            public bool IsValid(string password) => password[_index1] == _ch ^ password[_index2] == _ch;
         }
 
         private static readonly string[] Day2SampleInput =
