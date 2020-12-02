@@ -12,7 +12,7 @@ namespace AdventOfCode2020
         [Test]
         public void Puzzle1()
         {
-            Assert.AreEqual(383, ValidPasswordCount(Day2Input));
+            Assert.AreEqual(383, ValidSeldPasswordCount(Day2Input));
         }
 
         [Test]
@@ -25,20 +25,49 @@ namespace AdventOfCode2020
                 "2-9 c: ccccccccc"
             };
 
-            Assert.AreEqual(2, ValidPasswordCount(inputs));
+            Assert.AreEqual(2, ValidSeldPasswordCount(inputs));
         }
 
-        private static int ValidPasswordCount(IEnumerable<string> inputs) => inputs.Count(PasswordIsValid);
+        [Test]
+        public void Puzzle2()
+        {
+            Assert.AreEqual(272, ValidTobogganPasswordCount(Day2Input));
+        }
 
-        private static bool PasswordIsValid(string inputString)
+        [Test]
+        public void Puzzle2Sample()
+        {
+            string[] inputs =
+            {
+                "1-3 a: abcde",
+                "1-3 b: cdefg",
+                "2-9 c: ccccccccc"
+            };
+
+            Assert.AreEqual(1, ValidTobogganPasswordCount(inputs));
+        }
+
+        private static int ValidSeldPasswordCount(IEnumerable<string> inputs) => inputs.Count(SledPasswordIsValid);
+
+        private static bool SledPasswordIsValid(string inputString)
         {
             var parts = inputString.Split(": ");
-            var policy = PasswordPolicy.Create(parts[0]);
+            var policy = SledRentalPasswordPolicy.Create(parts[0]);
             var password = parts[1];
             return policy.IsValid(password);
         }
 
-        private sealed class PasswordPolicy
+        private static int ValidTobogganPasswordCount(IEnumerable<string> inputs) => inputs.Count(TobogganPasswordIsValid);
+
+        private static bool TobogganPasswordIsValid(string inputString)
+        {
+            var parts = inputString.Split(": ");
+            var policy = TobogganRentalPasswordPolicy.Create(parts[0]);
+            var password = parts[1];
+            return policy.IsValid(password);
+        }
+
+        private sealed class SledRentalPasswordPolicy
         {
             private static readonly Regex PolicyRegex = new Regex(@"^(?<min>\d+)\-(?<max>\d+) (?<ch>[a-z])$", RegexOptions.Compiled);
 
@@ -46,7 +75,7 @@ namespace AdventOfCode2020
             private readonly int _max;
             private readonly char _ch;
 
-            public static PasswordPolicy Create(string policy)
+            public static SledRentalPasswordPolicy Create(string policy)
             {
                 var match = PolicyRegex.Match(policy);
                 if (match.Success)
@@ -54,19 +83,48 @@ namespace AdventOfCode2020
                     var min = int.Parse(match.Groups["min"].Value);
                     var max = int.Parse(match.Groups["max"].Value);
                     var ch = match.Groups["ch"].Value[0];
-                    return new PasswordPolicy(min, max, ch);
+                    return new SledRentalPasswordPolicy(min, max, ch);
                 }
 
                 throw new ArgumentException("Incorrect policy format", nameof(policy));
             }
 
-            private PasswordPolicy(int min, int max, char ch) => (_min, _max, _ch) = (min, max, ch);
+            private SledRentalPasswordPolicy(int min, int max, char ch) => (_min, _max, _ch) = (min, max, ch);
 
             public bool IsValid(string password)
             {
                 var count = password.Count(c => c == _ch);
                 return _min <= count && count <= _max;
             }
+        }
+
+        private sealed class TobogganRentalPasswordPolicy
+        {
+            private static readonly Regex PolicyRegex = new Regex(@"^(?<index1>\d+)\-(?<index2>\d+) (?<ch>[a-z])$", RegexOptions.Compiled);
+
+            private readonly int _index1;
+            private readonly int _index2;
+            private readonly char _ch;
+
+            public static TobogganRentalPasswordPolicy Create(string policy)
+            {
+                var match = PolicyRegex.Match(policy);
+                if (match.Success)
+                {
+                    var index1 = int.Parse(match.Groups["index1"].Value) - 1;
+                    var index2 = int.Parse(match.Groups["index2"].Value) - 1;
+                    var ch = match.Groups["ch"].Value[0];
+                    return new TobogganRentalPasswordPolicy(index1, index2, ch);
+                }
+
+                throw new ArgumentException("Incorrect policy format", nameof(policy));
+            }
+
+            private TobogganRentalPasswordPolicy(int index1, int index2, char ch) => (_index1, _index2, _ch) = (index1, index2, ch);
+
+            public bool IsValid(string password) =>
+                (password[_index1] == _ch || password[_index2] == _ch) &&
+                password[_index1] != password[_index2];
         }
 
         private static readonly string[] Day2Input =
