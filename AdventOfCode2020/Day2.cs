@@ -12,7 +12,7 @@ namespace AdventOfCode2020
         [Test]
         public void Part1()
         {
-            Assert.AreEqual(383, ValidSeldPasswordCount(Day2Input));
+            Assert.AreEqual(383, ValidSledPasswordCount(Day2Input));
         }
 
         [Test]
@@ -25,7 +25,7 @@ namespace AdventOfCode2020
                 "2-9 c: ccccccccc"
             };
 
-            Assert.AreEqual(2, ValidSeldPasswordCount(inputs));
+            Assert.AreEqual(2, ValidSledPasswordCount(inputs));
         }
 
         [Test]
@@ -47,7 +47,7 @@ namespace AdventOfCode2020
             Assert.AreEqual(1, ValidTobogganPasswordCount(inputs));
         }
 
-        private static int ValidSeldPasswordCount(IEnumerable<string> inputs) => inputs.Count(SledPasswordIsValid);
+        private static int ValidSledPasswordCount(IEnumerable<string> inputs) => inputs.Count(SledPasswordIsValid);
 
         private static bool SledPasswordIsValid(string inputString)
         {
