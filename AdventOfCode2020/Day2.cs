@@ -18,14 +18,7 @@ namespace AdventOfCode2020
         [Test]
         public void Part1Sample()
         {
-            string[] inputs =
-            {
-                "1-3 a: abcde",
-                "1-3 b: cdefg",
-                "2-9 c: ccccccccc"
-            };
-
-            Assert.AreEqual(2, ValidSledPasswordCount(inputs));
+            Assert.AreEqual(2, ValidSledPasswordCount(Day2SampleInput));
         }
 
         [Test]
@@ -37,34 +30,33 @@ namespace AdventOfCode2020
         [Test]
         public void Part2Sample()
         {
-            string[] inputs =
+            Assert.AreEqual(1, ValidTobogganPasswordCount(Day2SampleInput));
+        }
+
+        private static int ValidSledPasswordCount(IEnumerable<string> inputs)
+        {
+            return inputs.Count(SledPasswordIsValid);
+
+            static bool SledPasswordIsValid(string inputString)
             {
-                "1-3 a: abcde",
-                "1-3 b: cdefg",
-                "2-9 c: ccccccccc"
-            };
-
-            Assert.AreEqual(1, ValidTobogganPasswordCount(inputs));
+                var parts = inputString.Split(": ");
+                var policy = SledRentalPasswordPolicy.Create(parts[0]);
+                var password = parts[1];
+                return policy.IsValid(password);
+            }
         }
 
-        private static int ValidSledPasswordCount(IEnumerable<string> inputs) => inputs.Count(SledPasswordIsValid);
-
-        private static bool SledPasswordIsValid(string inputString)
+        private static int ValidTobogganPasswordCount(IEnumerable<string> inputs)
         {
-            var parts = inputString.Split(": ");
-            var policy = SledRentalPasswordPolicy.Create(parts[0]);
-            var password = parts[1];
-            return policy.IsValid(password);
-        }
+            return inputs.Count(TobogganPasswordIsValid);
 
-        private static int ValidTobogganPasswordCount(IEnumerable<string> inputs) => inputs.Count(TobogganPasswordIsValid);
-
-        private static bool TobogganPasswordIsValid(string inputString)
-        {
-            var parts = inputString.Split(": ");
-            var policy = TobogganRentalPasswordPolicy.Create(parts[0]);
-            var password = parts[1];
-            return policy.IsValid(password);
+            static bool TobogganPasswordIsValid(string inputString)
+            {
+                var parts = inputString.Split(": ");
+                var policy = TobogganRentalPasswordPolicy.Create(parts[0]);
+                var password = parts[1];
+                return policy.IsValid(password);
+            }
         }
 
         private sealed class SledRentalPasswordPolicy
@@ -126,6 +118,13 @@ namespace AdventOfCode2020
                 (password[_index1] == _ch || password[_index2] == _ch) &&
                 password[_index1] != password[_index2];
         }
+
+        private static readonly string[] Day2SampleInput =
+        {
+            "1-3 a: abcde",
+            "1-3 b: cdefg",
+            "2-9 c: ccccccccc"
+        };
 
         private static readonly string[] Day2Input =
         {
