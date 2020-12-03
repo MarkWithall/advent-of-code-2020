@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace AdventOfCode2020
 {
-    [TestFixture]
+    [TestFixture(TestName = "Day 2: Password Philosophy")]
     public class Day2
     {
         [Test]
