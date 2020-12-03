@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Linq;
+using NUnit.Framework;
 
 namespace AdventOfCode2020
 {
@@ -17,7 +18,33 @@ namespace AdventOfCode2020
             Assert.AreEqual(7, CountTrees(Day3SampleInput, 3, 1));
         }
 
-        private static int CountTrees(string[] map, int right, int down)
+        [Test]
+        public void Part3()
+        {
+            Assert.AreEqual(3316272960L, CheckAllSlopes(Day3Input, Slopes));
+        }
+
+        [Test]
+        public void Part2Sample()
+        {
+            Assert.AreEqual(336, CheckAllSlopes(Day3SampleInput, Slopes));
+        }
+
+        private static long CheckAllSlopes(string[] map, (int right, int down)[] slopes) =>
+            slopes
+                .Select(s => CountTrees(map, s.right, s.down))
+                .Aggregate(1L, (product, treeCount) => product * treeCount);
+
+        private static readonly (int right, int down)[] Slopes =
+        {
+            (1, 1),
+            (3, 1),
+            (5, 1),
+            (7, 1),
+            (1, 2)
+        };
+
+        private static long CountTrees(string[] map, int right, int down)
         {
             var treeCount = 0;
             var currentX = 0;
