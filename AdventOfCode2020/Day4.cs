@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
@@ -138,6 +139,7 @@ namespace AdventOfCode2020
                     return new Size(size, units);
                 }
 
+                Debug.WriteLine($"Invalid height: {height}");
                 return new Size(0, Units.Cm);
                 //throw new InvalidOperationException($"Can't parse height: {height}");
             }
