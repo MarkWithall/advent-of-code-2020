@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
@@ -100,8 +99,9 @@ namespace AdventOfCode2020
             private bool IssueYearIsValid => 2010 <= IssueYear && IssueYear <= 2020;
             private bool ExpirationYearIsValid => 2020 <= ExpirationYear && ExpirationYear <= 2030;
 
-            private bool HeightIsValid => Height.Unit == Size.Units.Cm && 150 <= Height.Value && Height.Value <= 193 ||
-                                          Height.Unit == Size.Units.In && 59 <= Height.Value && Height.Value <= 76;
+            private bool HeightIsValid => Height.HasValue &&
+                                          (Height.Value.Unit == Size.Units.Cm && 150 <= Height.Value.Value && Height.Value.Value <= 193 ||
+                                           Height.Value.Unit == Size.Units.In && 59 <= Height.Value.Value && Height.Value.Value <= 76);
 
             private bool HairColourIsValid => Regex.IsMatch(HairColour, @"^#[0-9a-f]{6}$");
             private bool EyeColourIsValid => ValidEyeColours.Contains(EyeColour);
@@ -110,7 +110,7 @@ namespace AdventOfCode2020
             private int BirthYear => int.Parse(_fields["byr"]);
             private int IssueYear => int.Parse(_fields["iyr"]);
             private int ExpirationYear => int.Parse(_fields["eyr"]);
-            private Size Height => Size.Parse(_fields["hgt"]);
+            private Size? Height => Size.Parse(_fields["hgt"]);
             private string HairColour => _fields["hcl"];
             private string EyeColour => _fields["ecl"];
             private string PassportId => _fields["pid"];
@@ -123,7 +123,7 @@ namespace AdventOfCode2020
             public readonly int Value;
             public readonly Units Unit;
 
-            public static Size Parse(string height)
+            public static Size? Parse(string height)
             {
                 var match = Format.Match(height);
                 if (match.Success)
@@ -139,9 +139,7 @@ namespace AdventOfCode2020
                     return new Size(size, units);
                 }
 
-                Debug.WriteLine($"Invalid height: {height}");
-                return new Size(0, Units.Cm);
-                //throw new InvalidOperationException($"Can't parse height: {height}");
+                return null;
             }
 
             private Size(int value, Units unit)
