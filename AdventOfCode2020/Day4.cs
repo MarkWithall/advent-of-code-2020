@@ -38,7 +38,7 @@ namespace AdventOfCode2020
 
         private static int HasAllMadatoryFieldsCount(string[] input)
         {
-            return ReadPassports(input).Count(p => p.HasAllMadatoryFields);
+            return ReadPassports(input).Count(p => p.HasAllMandatoryFields);
         }
 
         private static int IsValidCount(string[] input)
@@ -76,6 +76,14 @@ namespace AdventOfCode2020
 
         private sealed class Passport
         {
+            private static readonly ISet<string> MandatoryFields = new HashSet<string> {"byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"};
+            //private static readonly ISet<string> OptionalFields = new HashSet<string> {"cid"};
+
+            private static readonly Regex HeightFormat = new Regex(@"^(?<height>\d+)(?<unit>cm|in)$", RegexOptions.Compiled);
+            private static readonly Regex HairColourFormat = new Regex(@"^#[0-9a-f]{6}$", RegexOptions.Compiled);
+            private static readonly ISet<string> ValidEyeColours = new HashSet<string> {"amb", "blu", "brn", "gry", "grn", "hzl", "oth"};
+            private static readonly Regex PassportIdFormat = new Regex(@"^\d{9}$", RegexOptions.Compiled);
+
             private readonly IDictionary<string, string> _fields;
 
             public Passport(IDictionary<string, string> fields)
@@ -83,12 +91,9 @@ namespace AdventOfCode2020
                 _fields = fields;
             }
 
-            private static readonly ISet<string> MandatoryFields = new HashSet<string> {"byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"};
-            //private static readonly ISet<string> OptionalFields = new HashSet<string> {"cid"};
+            public bool HasAllMandatoryFields => MandatoryFields.All(_fields.ContainsKey);
 
-            public bool HasAllMadatoryFields => MandatoryFields.All(_fields.ContainsKey);
-
-            public bool IsValid => HasAllMadatoryFields &&
+            public bool IsValid => HasAllMandatoryFields &&
                                    BirthYearIsValid &&
                                    IssueYearIsValid &&
                                    ExpirationYearIsValid &&
@@ -100,8 +105,6 @@ namespace AdventOfCode2020
             private bool BirthYearIsValid => 1920 <= BirthYear && BirthYear <= 2002;
             private bool IssueYearIsValid => 2010 <= IssueYear && IssueYear <= 2020;
             private bool ExpirationYearIsValid => 2020 <= ExpirationYear && ExpirationYear <= 2030;
-
-            private static readonly Regex HeightFormat = new Regex(@"^(?<height>\d+)(?<unit>cm|in)$", RegexOptions.Compiled);
 
             private bool HeightIsValid
             {
@@ -124,12 +127,9 @@ namespace AdventOfCode2020
                 }
             }
 
-            private bool HairColourIsValid => Regex.IsMatch(HairColour, @"^#[0-9a-f]{6}$");
-
-            private static readonly ISet<string> ValidEyeColours = new HashSet<string> {"amb", "blu", "brn", "gry", "grn", "hzl", "oth"};
+            private bool HairColourIsValid => HairColourFormat.IsMatch(HairColour);
             private bool EyeColourIsValid => ValidEyeColours.Contains(EyeColour);
-
-            private bool PassportIdIsValid => Regex.IsMatch(PassportId, @"^\d{9}$");
+            private bool PassportIdIsValid => PassportIdFormat.IsMatch(PassportId);
 
             private int BirthYear => int.Parse(_fields["byr"]);
             private int IssueYear => int.Parse(_fields["iyr"]);
