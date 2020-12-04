@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
@@ -84,6 +83,9 @@ namespace AdventOfCode2020
                 _fields = fields;
             }
 
+            private static readonly ISet<string> MandatoryFields = new HashSet<string> {"byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"};
+            //private static readonly ISet<string> OptionalFields = new HashSet<string> {"cid"};
+
             public bool HasAllMadatoryFields => MandatoryFields.All(_fields.ContainsKey);
 
             public bool IsValid => HasAllMadatoryFields &&
@@ -99,65 +101,44 @@ namespace AdventOfCode2020
             private bool IssueYearIsValid => 2010 <= IssueYear && IssueYear <= 2020;
             private bool ExpirationYearIsValid => 2020 <= ExpirationYear && ExpirationYear <= 2030;
 
-            private bool HeightIsValid => Height.HasValue &&
-                                          (Height.Value.Unit == Size.Units.Cm && 150 <= Height.Value.Value && Height.Value.Value <= 193 ||
-                                           Height.Value.Unit == Size.Units.In && 59 <= Height.Value.Value && Height.Value.Value <= 76);
+            private static readonly Regex HeightFormat = new Regex(@"^(?<height>\d+)(?<unit>cm|in)$", RegexOptions.Compiled);
+
+            private bool HeightIsValid
+            {
+                get
+                {
+                    var match = HeightFormat.Match(Height);
+                    if (match.Success)
+                    {
+                        var height = int.Parse(match.Groups["height"].Value);
+                        switch (match.Groups["unit"].Value)
+                        {
+                            case "cm":
+                                return 150 <= height && height <= 193;
+                            case "in":
+                                return 59 <= height && height <= 76;
+                        }
+                    }
+
+                    return false;
+                }
+            }
 
             private bool HairColourIsValid => Regex.IsMatch(HairColour, @"^#[0-9a-f]{6}$");
+
+            private static readonly ISet<string> ValidEyeColours = new HashSet<string> {"amb", "blu", "brn", "gry", "grn", "hzl", "oth"};
             private bool EyeColourIsValid => ValidEyeColours.Contains(EyeColour);
+
             private bool PassportIdIsValid => Regex.IsMatch(PassportId, @"^\d{9}$");
 
             private int BirthYear => int.Parse(_fields["byr"]);
             private int IssueYear => int.Parse(_fields["iyr"]);
             private int ExpirationYear => int.Parse(_fields["eyr"]);
-            private Size? Height => Size.Parse(_fields["hgt"]);
+            private string Height => _fields["hgt"];
             private string HairColour => _fields["hcl"];
             private string EyeColour => _fields["ecl"];
             private string PassportId => _fields["pid"];
         }
-
-        private readonly struct Size
-        {
-            private static readonly Regex Format = new Regex(@"^(?<value>\d+)(?<unit>cm|in)$", RegexOptions.Compiled);
-
-            public readonly int Value;
-            public readonly Units Unit;
-
-            public static Size? Parse(string height)
-            {
-                var match = Format.Match(height);
-                if (match.Success)
-                {
-                    var size = int.Parse(match.Groups["value"].Value);
-                    var units = match.Groups["unit"].Value switch
-                    {
-                        "cm" => Units.Cm,
-                        "in" => Units.In,
-                        _ => throw new InvalidOperationException("Unknown unit")
-                    };
-
-                    return new Size(size, units);
-                }
-
-                return null;
-            }
-
-            private Size(int value, Units unit)
-            {
-                Value = value;
-                Unit = unit;
-            }
-
-            public enum Units
-            {
-                Cm,
-                In
-            }
-        }
-
-        private static readonly ISet<string> MandatoryFields = new HashSet<string> {"byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"};
-        //private static readonly ISet<string> OptionalFields = new HashSet<string> {"cid"};
-        private static readonly ISet<string> ValidEyeColours = new HashSet<string> {"amb", "blu", "brn", "gry", "grn", "hzl", "oth"};
 
         private static readonly string[] InvalidPassports =
         {
