@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 
 namespace AdventOfCode2020
@@ -10,21 +12,42 @@ namespace AdventOfCode2020
         [Test]
         public void Part1()
         {
-            Assert.AreEqual(245, ValidCount(Day4Input));
+            Assert.AreEqual(245, HasAllMadatoryFieldsCount(Day4Input));
         }
 
         [Test]
         public void Part1Sample()
         {
-            Assert.AreEqual(2, ValidCount(Day4SampleInput));
+            Assert.AreEqual(2, HasAllMadatoryFieldsCount(Day4SampleInput));
         }
 
-        private int ValidCount(string[] input)
+        [Test]
+        public void Part2()
+        {
+            Assert.AreEqual(133, IsValidCount(Day4Input));
+        }
+
+        [Test]
+        public void Part2Sample()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.True(ReadPassports(InvalidPassports).All(p => p.IsValid == false));
+                Assert.True(ReadPassports(ValidPassports).All(p => p.IsValid));
+            });
+        }
+
+        private static int HasAllMadatoryFieldsCount(string[] input)
+        {
+            return ReadPassports(input).Count(p => p.HasAllMadatoryFields);
+        }
+
+        private static int IsValidCount(string[] input)
         {
             return ReadPassports(input).Count(p => p.IsValid);
         }
 
-        private IEnumerable<Passport> ReadPassports(string[] input)
+        private static IEnumerable<Passport> ReadPassports(string[] input)
         {
             var currentPassport = new Dictionary<string, string>();
 
@@ -61,11 +84,113 @@ namespace AdventOfCode2020
                 _fields = fields;
             }
 
-            public bool IsValid => MandatoryFields.All(_fields.ContainsKey);
+            public bool HasAllMadatoryFields => MandatoryFields.All(_fields.ContainsKey);
+
+            public bool IsValid => HasAllMadatoryFields &&
+                                   BirthYearIsValid &&
+                                   IssueYearIsValid &&
+                                   ExpirationYearIsValid &&
+                                   HeightIsValid &&
+                                   HairColourIsValid &&
+                                   EyeColourIsValid &&
+                                   PassportIdIsValid;
+
+            private bool BirthYearIsValid => 1920 <= BirthYear && BirthYear <= 2002;
+            private bool IssueYearIsValid => 2010 <= IssueYear && IssueYear <= 2020;
+            private bool ExpirationYearIsValid => 2020 <= ExpirationYear && ExpirationYear <= 2030;
+
+            private bool HeightIsValid => Height.Unit == Size.Units.Cm && 150 <= Height.Value && Height.Value <= 193 ||
+                                          Height.Unit == Size.Units.In && 59 <= Height.Value && Height.Value <= 76;
+
+            private bool HairColourIsValid => Regex.IsMatch(HairColour, @"^#[0-9a-f]{6}$");
+            private bool EyeColourIsValid => ValidEyeColours.Contains(EyeColour);
+            private bool PassportIdIsValid => Regex.IsMatch(PassportId, @"^\d{9}$");
+
+            private int BirthYear => int.Parse(_fields["byr"]);
+            private int IssueYear => int.Parse(_fields["iyr"]);
+            private int ExpirationYear => int.Parse(_fields["eyr"]);
+            private Size Height => Size.Parse(_fields["hgt"]);
+            private string HairColour => _fields["hcl"];
+            private string EyeColour => _fields["ecl"];
+            private string PassportId => _fields["pid"];
+        }
+
+        private readonly struct Size
+        {
+            private static readonly Regex Format = new Regex(@"^(?<value>\d+)(?<unit>cm|in)$", RegexOptions.Compiled);
+
+            public readonly int Value;
+            public readonly Units Unit;
+
+            public static Size Parse(string height)
+            {
+                var match = Format.Match(height);
+                if (match.Success)
+                {
+                    var size = int.Parse(match.Groups["value"].Value);
+                    var units = match.Groups["unit"].Value switch
+                    {
+                        "cm" => Units.Cm,
+                        "in" => Units.In,
+                        _ => throw new InvalidOperationException("Unknown unit")
+                    };
+
+                    return new Size(size, units);
+                }
+
+                return new Size(0, Units.Cm);
+                //throw new InvalidOperationException($"Can't parse height: {height}");
+            }
+
+            private Size(int value, Units unit)
+            {
+                Value = value;
+                Unit = unit;
+            }
+
+            public enum Units
+            {
+                Cm,
+                In
+            }
         }
 
         private static readonly ISet<string> MandatoryFields = new HashSet<string> {"byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"};
-        private static readonly ISet<string> OptionalFields = new HashSet<string> {"cid"};
+        //private static readonly ISet<string> OptionalFields = new HashSet<string> {"cid"};
+        private static readonly ISet<string> ValidEyeColours = new HashSet<string> {"amb", "blu", "brn", "gry", "grn", "hzl", "oth"};
+
+        private static readonly string[] InvalidPassports =
+        {
+            "eyr:1972 cid:100",
+            "hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926",
+            "",
+            "iyr:2019",
+            "hcl:#602927 eyr:1967 hgt:170cm",
+            "ecl:grn pid:012533040 byr:1946",
+            "",
+            "hcl:dab227 iyr:2012",
+            "ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277",
+            "",
+            "hgt:59cm ecl:zzz",
+            "eyr:2038 hcl:74454a iyr:2023",
+            "pid:3556412378 byr:2007"
+        };
+
+        private static readonly string[] ValidPassports =
+        {
+            "pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980",
+            "hcl:#623a2f",
+            "",
+            "eyr:2029 ecl:blu cid:129 byr:1989",
+            "iyr:2014 pid:896056539 hcl:#a97842 hgt:165cm",
+            "",
+            "hcl:#888785",
+            "hgt:164cm byr:2001 iyr:2015 cid:88",
+            "pid:545766238 ecl:hzl",
+            "eyr:2022",
+            "",
+            "iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719"
+        };
 
         private static readonly string[] Day4SampleInput =
         {
