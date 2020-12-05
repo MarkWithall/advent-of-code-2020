@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
@@ -10,8 +11,7 @@ namespace AdventOfCode2020
         [Test]
         public void Part1()
         {
-            var maxSeatId = Day5Input.Select(BoardingPass.Create).Max(p => p.SeatId);
-            Assert.AreEqual(991, maxSeatId);
+            Assert.AreEqual(991, BoardingPasses.Max(p => p.SeatId));
         }
 
         [TestCase("FBFBBFFRLR", 44, 5, 357)]
@@ -28,6 +28,18 @@ namespace AdventOfCode2020
                 Assert.AreEqual(expectedSeatId, boardingPass.SeatId);
             });
         }
+
+        [Test]
+        public void Part2()
+        {
+            var orderedPasses = BoardingPasses.OrderBy(p => p.SeatId).ToArray();
+            var adjacentPairs = orderedPasses.Zip(orderedPasses.Skip(1));
+            var (seatBefore, _) = adjacentPairs.Single(p => p.Second.SeatId - p.First.SeatId == 2);
+            var mySeatId = seatBefore.SeatId + 1;
+            Assert.AreEqual(534, mySeatId);
+        }
+
+        private static IEnumerable<BoardingPass> BoardingPasses => Day5Input.Select(BoardingPass.Create);
 
         private sealed class BoardingPass
         {
@@ -71,6 +83,8 @@ namespace AdventOfCode2020
             public int Row { get; }
             public int Column { get; }
             public int SeatId => Row * 8 + Column;
+
+            public override string ToString() => $"({Row}, {Column}): {SeatId}";
         }
 
         private static readonly string[] Day5Input =
