@@ -4,7 +4,7 @@ using NUnit.Framework;
 
 namespace AdventOfCode2020
 {
-    [TestFixture(TestName = "")]
+    [TestFixture(TestName = "Day 5: Binary Boarding")]
     public class Day5
     {
         [Test]
