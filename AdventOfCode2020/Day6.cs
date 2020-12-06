@@ -31,19 +31,19 @@ namespace AdventOfCode2020
             Assert.AreEqual(6, SumOfCommonQuestions(Day6SampleInput));
         }
 
-        private static int SumOfUniqueQuestions(string[] input) => ReadDeclarationFormGroups(input).Sum(g => g.UniqueQuestions);
+        private static int SumOfUniqueQuestions(IEnumerable<string> input) => ReadDeclarationFormGroups(input).Sum(g => g.UniqueQuestions);
 
-        private static int SumOfCommonQuestions(string[] input) => ReadDeclarationFormGroups(input).Sum(g => g.CommonQuestions);
+        private static int SumOfCommonQuestions(IEnumerable<string> input) => ReadDeclarationFormGroups(input).Sum(g => g.CommonQuestions);
 
-        private static IEnumerable<DeclarationFormGroup> ReadDeclarationFormGroups(string[] input)
+        private static IEnumerable<DeclarationFormGroup> ReadDeclarationFormGroups(IEnumerable<string> input)
         {
-            var currentGroup = new List<string>();
+            var currentGroup = new List<IEnumerable<char>>();
             foreach (var formLine in input)
             {
                 if (formLine == "")
                 {
                     yield return new DeclarationFormGroup(currentGroup.ToArray());
-                    currentGroup = new List<string>();
+                    currentGroup = new List<IEnumerable<char>>();
                 }
                 else
                 {
@@ -59,16 +59,16 @@ namespace AdventOfCode2020
 
         private sealed class DeclarationFormGroup
         {
-            private readonly string[] _forms;
+            private readonly ICollection<IEnumerable<char>> _forms;
 
-            public DeclarationFormGroup(string[] forms)
+            public DeclarationFormGroup(ICollection<IEnumerable<char>> forms)
             {
                 _forms = forms;
             }
 
             public int UniqueQuestions => _forms.SelectMany(c => c).Distinct().Count();
 
-            public int CommonQuestions => _forms.Skip(1).Aggregate(_forms.First().ToCharArray(), (common, form) => common.Intersect(form).ToArray()).Length;
+            public int CommonQuestions => _forms.Skip(1).Aggregate(_forms.First(), (common, form) => common.Intersect(form)).Count();
         }
 
         private static readonly string[] Day6SampleInput =
