@@ -19,7 +19,21 @@ namespace AdventOfCode2020
             Assert.AreEqual(11, SumOfUniqueQuestions(Day6SampleInput));
         }
 
+        [Test]
+        public void Part2()
+        {
+            Assert.AreEqual(3489, SumOfCommonQuestions(Day6Input));
+        }
+
+        [Test]
+        public void Part2Sample()
+        {
+            Assert.AreEqual(6, SumOfCommonQuestions(Day6SampleInput));
+        }
+
         private static int SumOfUniqueQuestions(string[] input) => ReadDeclarationFormGroups(input).Sum(g => g.UniqueQuestions);
+
+        private static int SumOfCommonQuestions(string[] input) => ReadDeclarationFormGroups(input).Sum(g => g.CommonQuestions);
 
         private static IEnumerable<DeclarationFormGroup> ReadDeclarationFormGroups(string[] input)
         {
@@ -53,6 +67,8 @@ namespace AdventOfCode2020
             }
 
             public int UniqueQuestions => _forms.SelectMany(c => c).Distinct().Count();
+
+            public int CommonQuestions => _forms.Aggregate(_forms[0].ToCharArray(), (common, form) => common.Intersect(form).ToArray()).Length;
         }
 
         private static readonly string[] Day6SampleInput =
