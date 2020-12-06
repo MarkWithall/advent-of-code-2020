@@ -68,7 +68,7 @@ namespace AdventOfCode2020
 
             public int UniqueQuestions => _forms.SelectMany(c => c).Distinct().Count();
 
-            public int CommonQuestions => _forms.Aggregate(_forms[0].ToCharArray(), (common, form) => common.Intersect(form).ToArray()).Length;
+            public int CommonQuestions => _forms.Skip(1).Aggregate(_forms.First().ToCharArray(), (common, form) => common.Intersect(form).ToArray()).Length;
         }
 
         private static readonly string[] Day6SampleInput =
