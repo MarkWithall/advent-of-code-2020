@@ -45,7 +45,6 @@ namespace AdventOfCode2020
         private static IEnumerable<Bag> ReadBags(IEnumerable<string> rules)
         {
             var factory = new BagFactory();
-
             return rules.Select(ParseRule).ToArray();
 
             Bag ParseRule(string rule)
