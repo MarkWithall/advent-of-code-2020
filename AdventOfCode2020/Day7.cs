@@ -36,31 +36,17 @@ namespace AdventOfCode2020
             Assert.AreEqual(126, BagCountInsideShinyGoldBag(Day7Part2SampleInput));
         }
 
-        private static int BagCountInsideShinyGoldBag(string[] input)
-        {
-            var bags = BagRuleParser(input).ToDictionary(b => b.Colour);
-            var shinyGoldBag = bags["shiny gold"];
-            return CountBagsInside(shinyGoldBag, bags);
-        }
+        private static int BagCountInsideShinyGoldBag(string[] input) =>
+            BagRuleParser(input).First(b => b.Colour == "shiny gold").ContentCount;
 
-        private static int CountBagsInside(Bag bag, IDictionary<string, Bag> otherBags) =>
-            bag.Contents.Sum(c => c.count + c.count * CountBagsInside(otherBags[c.bag.Colour], otherBags));
-
-        private static int BagColoursThatCanContainAtLeastOneShinyGoldBag(string[] input)
-        {
-            var bags = BagRuleParser(input).ToDictionary(b => b.Colour);
-            return bags.Values.Count(b => CanContainShinyGoldBag(b, bags));
-        }
-
-        private static bool CanContainShinyGoldBag(Bag bag, IDictionary<string, Bag> otherBags) =>
-            bag.Contents.Select(b => b.bag.Colour).Contains("shiny gold") ||
-            bag.Contents.Any(b => CanContainShinyGoldBag(otherBags[b.bag.Colour], otherBags));
+        private static int BagColoursThatCanContainAtLeastOneShinyGoldBag(string[] input) =>
+            BagRuleParser(input).Count(b => b.CanContain("shiny gold"));
 
         private static IEnumerable<Bag> BagRuleParser(IEnumerable<string> rules)
         {
             var factory = new BagFactory();
 
-            return rules.Select(ParseRule);
+            return rules.Select(ParseRule).ToArray();
 
             Bag ParseRule(string rule)
             {
@@ -124,11 +110,19 @@ namespace AdventOfCode2020
             }
 
             public string Colour { get; }
-            public IEnumerable<(Bag bag, int count)> Contents => _contents.Select(kvp => (_lookup.FindBag(kvp.Key), kvp.Value));
+
+            public bool CanContain(string bagColour) =>
+                Contents.Any(c => c.bag.Colour == bagColour) ||
+                Contents.Any(c => c.bag.CanContain(bagColour));
+
+
+            public int ContentCount => Contents.Sum(c => c.count + c.count * c.bag.ContentCount);
 
             public override string ToString() => _contents.Any()
                 ? $"{Colour} bags contain {string.Join(", ", _contents.Select(kvp => $"{kvp.Value} {kvp.Key} {(kvp.Value == 1 ? "bag" : "bags")}"))}."
                 : $"{Colour} bags contain no other bags.";
+
+            private IEnumerable<(Bag bag, int count)> Contents => _contents.Select(kvp => (_lookup.FindBag(kvp.Key), kvp.Value));
         }
 
         private static readonly string[] Day7Part1SampleInput =
