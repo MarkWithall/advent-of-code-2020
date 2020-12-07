@@ -61,14 +61,7 @@ namespace AdventOfCode2020
                     var matches = BagContent.Matches(contentString);
                     if (matches.Any())
                     {
-                        var contents = new Dictionary<string, int>();
-                        foreach (Match m in matches)
-                        {
-                            var count = int.Parse(m.Groups["count"].Value);
-                            var colour = m.Groups["colour"].Value;
-                            contents.Add(colour, count);
-                        }
-
+                        var contents = matches.ToDictionary(m => m.Groups["colour"].Value, m => int.Parse(m.Groups["count"].Value));
                         return factory.Create(match.Groups["colour"].Value, contents);
                     }
                 }
