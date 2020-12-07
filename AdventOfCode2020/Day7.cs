@@ -107,7 +107,6 @@ namespace AdventOfCode2020
                 Contents.Any(c => c.bag.Colour == bagColour) ||
                 Contents.Any(c => c.bag.CanContain(bagColour));
 
-
             public int ContentCount => Contents.Sum(c => c.count + c.count * c.bag.ContentCount);
 
             public override string ToString() => _contents.Any()
