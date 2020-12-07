@@ -51,9 +51,12 @@ namespace AdventOfCode2020
 
             private readonly IDictionary<string, Bag> _bagLookup = new Dictionary<string, Bag>();
 
-            public static IEnumerable<Bag> ReadBags(IEnumerable<string> input)
+            public static IEnumerable<Bag> ReadBags(IEnumerable<string> input) => new BagFactory().Read(input);
+
+            public Bag FindBag(string colour) => _bagLookup[colour];
+
+            private IEnumerable<Bag> Read(IEnumerable<string> input)
             {
-                var factory = new BagFactory();
                 return input.Select(ParseRule).ToArray();
 
                 Bag ParseRule(string rule)
@@ -64,22 +67,20 @@ namespace AdventOfCode2020
                         var contentString = match.Groups["contents"].Value;
                         if (contentString == "no other bags")
                         {
-                            return factory.Create(match.Groups["colour"].Value, new Dictionary<string, int>());
+                            return Create(match.Groups["colour"].Value, new Dictionary<string, int>());
                         }
 
                         var matches = BagContent.Matches(contentString);
                         if (matches.Any())
                         {
                             var contents = matches.ToDictionary(m => m.Groups["colour"].Value, m => int.Parse(m.Groups["count"].Value));
-                            return factory.Create(match.Groups["colour"].Value, contents);
+                            return Create(match.Groups["colour"].Value, contents);
                         }
                     }
 
                     throw new InvalidOperationException($"Invalid rule: {rule}");
                 }
             }
-
-            public Bag FindBag(string colour) => _bagLookup[colour];
 
             private Bag Create(string colour, IDictionary<string, int> contents)
             {
