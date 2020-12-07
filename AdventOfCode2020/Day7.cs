@@ -49,8 +49,7 @@ namespace AdventOfCode2020
         private static int BagColoursThatCanContainAtLeastOneShinyGoldBag(string[] input)
         {
             var bags = BagRuleParser(input).ToDictionary(b => b.Colour);
-            var colors = bags.Values.Where(b => CanContainShinyGoldBag(b, bags)).ToArray();
-            return colors.Length;
+            return bags.Values.Count(b => CanContainShinyGoldBag(b, bags));
         }
 
         private static bool CanContainShinyGoldBag(Bag bag, IDictionary<string, Bag> otherBags) =>
