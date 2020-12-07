@@ -10,7 +10,7 @@ namespace AdventOfCode2020
     public class Day7
     {
         private static readonly Regex BagRule = new Regex(@"^(?<colour>[a-z ]+) bags contain (?<contents>.*)\.$", RegexOptions.Compiled);
-        private static readonly Regex Description = new Regex(@"(?<count>\d+) (?<colour>[a-z ]+) bags?", RegexOptions.Compiled);
+        private static readonly Regex BagContent = new Regex(@"(?<count>\d+) (?<colour>[a-z ]+) bags?", RegexOptions.Compiled);
 
         [Test]
         public void Part1()
@@ -42,10 +42,10 @@ namespace AdventOfCode2020
         private static int BagColoursThatCanContainAtLeastOneShinyGoldBag(string[] input) =>
             ReadBags(input).Count(b => b.CanContain("shiny gold"));
 
-        private static IEnumerable<Bag> ReadBags(IEnumerable<string> rules)
+        private static IEnumerable<Bag> ReadBags(IEnumerable<string> input)
         {
             var factory = new BagFactory();
-            return rules.Select(ParseRule).ToArray();
+            return input.Select(ParseRule).ToArray();
 
             Bag ParseRule(string rule)
             {
@@ -58,7 +58,7 @@ namespace AdventOfCode2020
                         return factory.Create(match.Groups["colour"].Value, new Dictionary<string, int>());
                     }
 
-                    var matches = Description.Matches(contentString);
+                    var matches = BagContent.Matches(contentString);
                     if (matches.Any())
                     {
                         var contents = new Dictionary<string, int>();
