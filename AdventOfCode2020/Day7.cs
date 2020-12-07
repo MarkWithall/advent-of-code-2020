@@ -104,16 +104,17 @@ namespace AdventOfCode2020
             public string Colour { get; }
 
             public bool CanContain(string bagColour) =>
-                Contents.Any(c => c.bag.Colour == bagColour) ||
-                Contents.Any(c => c.bag.CanContain(bagColour));
+                Contents.Any(bag => bag.Colour == bagColour) ||
+                Contents.Any(bag => bag.CanContain(bagColour));
 
-            public int ContentCount => Contents.Sum(c => c.count + c.count * c.bag.ContentCount);
+            public int ContentCount => ContentsWithCount.Sum(c => c.count + c.count * c.bag.ContentCount);
 
             public override string ToString() => _contents.Any()
                 ? $"{Colour} bags contain {string.Join(", ", _contents.Select(kvp => $"{kvp.Value} {kvp.Key} {(kvp.Value == 1 ? "bag" : "bags")}"))}."
                 : $"{Colour} bags contain no other bags.";
 
-            private IEnumerable<(Bag bag, int count)> Contents => _contents.Select(kvp => (_lookup.FindBag(kvp.Key), kvp.Value));
+            private IEnumerable<Bag> Contents => _contents.Keys.Select(colour => _lookup.FindBag(colour));
+            private IEnumerable<(Bag bag, int count)> ContentsWithCount => _contents.Select(kvp => (_lookup.FindBag(kvp.Key), kvp.Value));
         }
 
         private static readonly string[] Day7Part1SampleInput =
