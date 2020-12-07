@@ -44,7 +44,7 @@ namespace AdventOfCode2020
         }
 
         private static int CountBagsInside(Bag bag, IDictionary<string, Bag> otherBags) =>
-            bag.Contents.Sum(c => c.Value + c.Value * CountBagsInside(otherBags[c.Key], otherBags));
+            bag.Contents.Sum(c => c.count + c.count * CountBagsInside(otherBags[c.bag.Colour], otherBags));
 
         private static int BagColoursThatCanContainAtLeastOneShinyGoldBag(string[] input)
         {
@@ -53,17 +53,16 @@ namespace AdventOfCode2020
         }
 
         private static bool CanContainShinyGoldBag(Bag bag, IDictionary<string, Bag> otherBags) =>
-            bag.Contents.Keys.Contains("shiny gold") ||
-            bag.Contents.Any(b => CanContainShinyGoldBag(otherBags[b.Key], otherBags));
+            bag.Contents.Select(b => b.bag.Colour).Contains("shiny gold") ||
+            bag.Contents.Any(b => CanContainShinyGoldBag(otherBags[b.bag.Colour], otherBags));
 
         private static IEnumerable<Bag> BagRuleParser(IEnumerable<string> rules)
         {
-            foreach (var rule in rules)
-            {
-                yield return ParseRule(rule);
-            }
+            var factory = new BagFactory();
 
-            static Bag ParseRule(string rule)
+            return rules.Select(ParseRule);
+
+            Bag ParseRule(string rule)
             {
                 var match = BagRule.Match(rule);
                 if (match.Success)
@@ -71,7 +70,7 @@ namespace AdventOfCode2020
                     var contentString = match.Groups["contents"].Value;
                     if (contentString == "no other bags")
                     {
-                        return new Bag(match.Groups["colour"].Value, new Dictionary<string, int>());
+                        return factory.Create(match.Groups["colour"].Value, new Dictionary<string, int>());
                     }
 
                     var matches = Description.Matches(contentString);
@@ -85,7 +84,7 @@ namespace AdventOfCode2020
                             contents.Add(colour, count);
                         }
 
-                        return new Bag(match.Groups["colour"].Value, contents);
+                        return factory.Create(match.Groups["colour"].Value, contents);
                     }
                 }
 
@@ -93,18 +92,39 @@ namespace AdventOfCode2020
             }
         }
 
+        private interface IBagLookup
+        {
+            Bag FindBag(string bagColour);
+        }
+
+        private sealed class BagFactory : IBagLookup
+        {
+            private readonly IDictionary<string, Bag> _bagLookup = new Dictionary<string, Bag>();
+
+            public Bag FindBag(string colour) => _bagLookup[colour];
+
+            public Bag Create(string colour, IDictionary<string, int> contents)
+            {
+                var bag = new Bag(colour, contents, this);
+                _bagLookup.Add(bag.Colour, bag);
+                return bag;
+            }
+        }
+
         private sealed class Bag
         {
             private readonly IDictionary<string, int> _contents;
+            private readonly IBagLookup _lookup;
 
-            public Bag(string colour, IDictionary<string, int> contents)
+            public Bag(string colour, IDictionary<string, int> contents, IBagLookup lookup)
             {
                 Colour = colour;
                 _contents = contents;
+                _lookup = lookup;
             }
 
             public string Colour { get; }
-            public IDictionary<string, int> Contents => _contents;
+            public IEnumerable<(Bag bag, int count)> Contents => _contents.Select(kvp => (_lookup.FindBag(kvp.Key), kvp.Value));
 
             public override string ToString() => _contents.Any()
                 ? $"{Colour} bags contain {string.Join(", ", _contents.Select(kvp => $"{kvp.Value} {kvp.Key} {(kvp.Value == 1 ? "bag" : "bags")}"))}."
