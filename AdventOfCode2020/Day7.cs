@@ -9,9 +9,6 @@ namespace AdventOfCode2020
     [TestFixture(TestName = "Day 7: Handy Haversacks")]
     public class Day7
     {
-        private static readonly Regex BagRule = new Regex(@"^(?<colour>[a-z ]+) bags contain (?<contents>.*)\.$", RegexOptions.Compiled);
-        private static readonly Regex BagContent = new Regex(@"(?<count>\d+) (?<colour>[a-z ]+) bags?", RegexOptions.Compiled);
-
         [Test]
         public void Part1()
         {
@@ -49,6 +46,9 @@ namespace AdventOfCode2020
 
         private sealed class BagFactory : IBagLookup
         {
+            private static readonly Regex BagRule = new Regex(@"^(?<colour>[a-z ]+) bags contain (?<contents>.*)\.$", RegexOptions.Compiled);
+            private static readonly Regex BagContent = new Regex(@"(?<count>\d+) (?<colour>[a-z ]+) bags?", RegexOptions.Compiled);
+
             private readonly IDictionary<string, Bag> _bagLookup = new Dictionary<string, Bag>();
 
             public static IEnumerable<Bag> ReadBags(IEnumerable<string> input)
