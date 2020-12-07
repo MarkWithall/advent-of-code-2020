@@ -37,12 +37,12 @@ namespace AdventOfCode2020
         }
 
         private static int BagCountInsideShinyGoldBag(string[] input) =>
-            BagRuleParser(input).First(b => b.Colour == "shiny gold").ContentCount;
+            ReadBags(input).First(b => b.Colour == "shiny gold").ContentCount;
 
         private static int BagColoursThatCanContainAtLeastOneShinyGoldBag(string[] input) =>
-            BagRuleParser(input).Count(b => b.CanContain("shiny gold"));
+            ReadBags(input).Count(b => b.CanContain("shiny gold"));
 
-        private static IEnumerable<Bag> BagRuleParser(IEnumerable<string> rules)
+        private static IEnumerable<Bag> ReadBags(IEnumerable<string> rules)
         {
             var factory = new BagFactory();
 
