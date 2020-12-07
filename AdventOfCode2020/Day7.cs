@@ -21,8 +21,30 @@ namespace AdventOfCode2020
         [Test]
         public void Part1Sample()
         {
-            Assert.AreEqual(4, BagColoursThatCanContainAtLeastOneShinyGoldBag(Day7SampleInput));
+            Assert.AreEqual(4, BagColoursThatCanContainAtLeastOneShinyGoldBag(Day7Part1SampleInput));
         }
+
+        [Test]
+        public void Part2()
+        {
+            Assert.AreEqual(3805, BagCountInsideShinyGoldBag(Day7Input));
+        }
+
+        [Test]
+        public void Part2Sample()
+        {
+            Assert.AreEqual(126, BagCountInsideShinyGoldBag(Day7Part2SampleInput));
+        }
+
+        private static int BagCountInsideShinyGoldBag(string[] input)
+        {
+            var bags = BagRuleParser(input).ToDictionary(b => b.Colour);
+            var shinyGoldBag = bags["shiny gold"];
+            return CountBagsInside(shinyGoldBag, bags);
+        }
+
+        private static int CountBagsInside(Bag bag, IDictionary<string, Bag> otherBags) =>
+            bag.Contents.Sum(c => c.Value + c.Value * CountBagsInside(otherBags[c.Key], otherBags));
 
         private static int BagColoursThatCanContainAtLeastOneShinyGoldBag(string[] input)
         {
@@ -32,8 +54,8 @@ namespace AdventOfCode2020
         }
 
         private static bool CanContainShinyGoldBag(Bag bag, IDictionary<string, Bag> otherBags) =>
-            bag.Contents.Contains("shiny gold") ||
-            bag.Contents.Any(b => CanContainShinyGoldBag(otherBags[b], otherBags));
+            bag.Contents.Keys.Contains("shiny gold") ||
+            bag.Contents.Any(b => CanContainShinyGoldBag(otherBags[b.Key], otherBags));
 
         private static IEnumerable<Bag> BagRuleParser(IEnumerable<string> rules)
         {
@@ -83,14 +105,14 @@ namespace AdventOfCode2020
             }
 
             public string Colour { get; }
-            public IEnumerable<string> Contents => _contents.Keys;
+            public IDictionary<string, int> Contents => _contents;
 
             public override string ToString() => _contents.Any()
                 ? $"{Colour} bags contain {string.Join(", ", _contents.Select(kvp => $"{kvp.Value} {kvp.Key} {(kvp.Value == 1 ? "bag" : "bags")}"))}."
                 : $"{Colour} bags contain no other bags.";
         }
 
-        private static readonly string[] Day7SampleInput =
+        private static readonly string[] Day7Part1SampleInput =
         {
             "light red bags contain 1 bright white bag, 2 muted yellow bags.",
             "dark orange bags contain 3 bright white bags, 4 muted yellow bags.",
@@ -101,6 +123,17 @@ namespace AdventOfCode2020
             "vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.",
             "faded blue bags contain no other bags.",
             "dotted black bags contain no other bags."
+        };
+
+        private static readonly string[] Day7Part2SampleInput =
+        {
+            "shiny gold bags contain 2 dark red bags.",
+            "dark red bags contain 2 dark orange bags.",
+            "dark orange bags contain 2 dark yellow bags.",
+            "dark yellow bags contain 2 dark green bags.",
+            "dark green bags contain 2 dark blue bags.",
+            "dark blue bags contain 2 dark violet bags.",
+            "dark violet bags contain no other bags."
         };
 
         private static readonly string[] Day7Input =
