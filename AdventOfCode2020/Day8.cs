@@ -10,19 +10,50 @@ namespace AdventOfCode2020
         [Test]
         public void Part1()
         {
-            Assert.AreEqual(1949, RunFirstLoopThroughProgram(Day8Input));
+            Assert.AreEqual(1949, Cpu.RunProgram(Day8Input).result);
         }
 
         [Test]
         public void Part1Sample()
         {
-            Assert.AreEqual(5, RunFirstLoopThroughProgram(Day8SampleInput));
+            Assert.AreEqual(5, Cpu.RunProgram(Day8SampleInput).result);
         }
 
-        private static int RunFirstLoopThroughProgram(string[] input)
+        [Test]
+        public void Part2()
         {
-            var cpu = new Cpu(input);
-            return cpu.RunFirstLoop();
+            var repairedInput = RepairInput(Day8Input);
+            Assert.AreEqual(2092, Cpu.RunProgram(repairedInput).result);
+        }
+
+        [Test]
+        public void Part2Sample()
+        {
+            var repairedInput = RepairInput(Day8SampleInput);
+            Assert.AreEqual(8, Cpu.RunProgram(repairedInput).result);
+        }
+
+        private static string[] RepairInput(string[] input)
+        {
+            for (var i = 0; i < input.Length; i++)
+            {
+                var instruction = input[i];
+                if (instruction.StartsWith("acc"))
+                {
+                    continue;
+                }
+
+                var newInstruction = (instruction[..3] == "jmp" ? "nop" : "jmp") + instruction[4..];
+                var repaired = input.ToArray();
+                repaired[i] = newInstruction;
+
+                if (!Cpu.RunProgram(repaired).error)
+                {
+                    return repaired;
+                }
+            }
+
+            throw new InvalidOperationException("Could not repair program");
         }
 
         private sealed class Cpu
@@ -32,20 +63,22 @@ namespace AdventOfCode2020
             private int _accumulator;
             private int _programCounter;
 
-            public Cpu(string[] program)
+            public static (int result, bool error) RunProgram(string[] program) => new Cpu(program).Run();
+
+            private Cpu(string[] program)
             {
                 _program = program;
                 _executionCount = program.Select(i => 0).ToArray();
             }
 
-            public int RunFirstLoop()
+            private (int result, bool error) Run()
             {
-                while (_executionCount[_programCounter] == 0)
+                while (_programCounter < _program.Length && _executionCount[_programCounter] == 0)
                 {
                     RunInstruction(_program[_programCounter]);
                 }
 
-                return _accumulator;
+                return (_accumulator, _programCounter < _program.Length);
             }
 
             private void RunInstruction(string instruction)
