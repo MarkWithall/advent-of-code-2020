@@ -11,27 +11,27 @@ namespace AdventOfCode2020
         [Test]
         public void Part1()
         {
-            Assert.AreEqual(1949, Cpu.RunProgram(Day8Input).result);
+            Assert.AreEqual(1949, Run(Day8Input).result);
         }
 
         [Test]
         public void Part1Sample()
         {
-            Assert.AreEqual(5, Cpu.RunProgram(Day8SampleInput).result);
+            Assert.AreEqual(5, Run(Day8SampleInput).result);
         }
 
         [Test]
         public void Part2()
         {
             var repairedInput = RepairInput(Day8Input);
-            Assert.AreEqual(2092, Cpu.RunProgram(repairedInput).result);
+            Assert.AreEqual(2092, Run(repairedInput).result);
         }
 
         [Test]
         public void Part2Sample()
         {
             var repairedInput = RepairInput(Day8SampleInput);
-            Assert.AreEqual(8, Cpu.RunProgram(repairedInput).result);
+            Assert.AreEqual(8, Run(repairedInput).result);
         }
 
         private static string[] RepairInput(string[] input)
@@ -48,7 +48,7 @@ namespace AdventOfCode2020
                 var repaired = input.ToArray();
                 repaired[i] = newInstruction;
 
-                if (!Cpu.RunProgram(repaired).error)
+                if (!Run(repaired).error)
                 {
                     return repaired;
                 }
@@ -57,53 +57,37 @@ namespace AdventOfCode2020
             throw new InvalidOperationException("Could not repair program");
         }
 
-        private sealed class Cpu
+
+        private static (int result, bool error) Run(string[] program)
         {
-            private readonly ISet<int> _instructionsRun = new HashSet<int>();
-            private readonly string[] _program;
-            private int _accumulator;
-            private int _programCounter;
+            var instructionsRun = new HashSet<int>();
+            var programCounter = 0;
+            var accumulator = 0;
 
-            public static (int result, bool error) RunProgram(string[] program) => new Cpu(program).Run();
-
-            private Cpu(string[] program)
+            while (programCounter < program.Length && !instructionsRun.Contains(programCounter))
             {
-                _program = program;
-            }
-
-            private (int result, bool error) Run()
-            {
-                while (_programCounter < _program.Length && !_instructionsRun.Contains(_programCounter))
-                {
-                    RunInstruction(_program[_programCounter]);
-                }
-
-                return (_accumulator, _programCounter < _program.Length);
-            }
-
-            private void RunInstruction(string instruction)
-            {
+                var instruction = program[programCounter];
                 switch (instruction[..3])
                 {
                     case "nop":
                     {
-                        _instructionsRun.Add(_programCounter);
-                        _programCounter++;
+                        instructionsRun.Add(programCounter);
+                        programCounter++;
                         break;
                     }
                     case "acc":
                     {
                         var operand = int.Parse(instruction[4..]);
-                        _instructionsRun.Add(_programCounter);
-                        _accumulator += operand;
-                        _programCounter++;
+                        instructionsRun.Add(programCounter);
+                        accumulator += operand;
+                        programCounter++;
                         break;
                     }
                     case "jmp":
                     {
                         var operand = int.Parse(instruction[4..]);
-                        _instructionsRun.Add(_programCounter);
-                        _programCounter += operand;
+                        instructionsRun.Add(programCounter);
+                        programCounter += operand;
                         break;
                     }
                     default:
@@ -112,6 +96,8 @@ namespace AdventOfCode2020
                     }
                 }
             }
+
+            return (accumulator, programCounter < program.Length);
         }
 
         private static readonly string[] Day8SampleInput =
