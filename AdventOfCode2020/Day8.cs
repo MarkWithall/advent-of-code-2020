@@ -87,19 +87,23 @@ namespace AdventOfCode2020
                 {
                     case "nop":
                     {
-                        Nop();
+                        _instructionsRun.Add(_programCounter);
+                        _programCounter++;
                         break;
                     }
                     case "acc":
                     {
                         var operand = int.Parse(instruction[4..]);
-                        Acc(operand);
+                        _instructionsRun.Add(_programCounter);
+                        _accumulator += operand;
+                        _programCounter++;
                         break;
                     }
                     case "jmp":
                     {
                         var operand = int.Parse(instruction[4..]);
-                        Jmp(operand);
+                        _instructionsRun.Add(_programCounter);
+                        _programCounter += operand;
                         break;
                     }
                     default:
@@ -107,25 +111,6 @@ namespace AdventOfCode2020
                         throw new InvalidOperationException($"Unknown instruction: {instruction}");
                     }
                 }
-            }
-
-            private void Nop()
-            {
-                _instructionsRun.Add(_programCounter);
-                _programCounter++;
-            }
-
-            private void Acc(int operand)
-            {
-                _instructionsRun.Add(_programCounter);
-                _accumulator += operand;
-                _programCounter++;
-            }
-
-            private void Jmp(int operand)
-            {
-                _instructionsRun.Add(_programCounter);
-                _programCounter += operand;
             }
         }
 
