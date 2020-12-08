@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
@@ -58,7 +59,7 @@ namespace AdventOfCode2020
 
         private sealed class Cpu
         {
-            private readonly int[] _executionCount;
+            private readonly ISet<int> _instructionsRun = new HashSet<int>();
             private readonly string[] _program;
             private int _accumulator;
             private int _programCounter;
@@ -68,12 +69,11 @@ namespace AdventOfCode2020
             private Cpu(string[] program)
             {
                 _program = program;
-                _executionCount = program.Select(i => 0).ToArray();
             }
 
             private (int result, bool error) Run()
             {
-                while (_programCounter < _program.Length && _executionCount[_programCounter] == 0)
+                while (_programCounter < _program.Length && !_instructionsRun.Contains(_programCounter))
                 {
                     RunInstruction(_program[_programCounter]);
                 }
@@ -111,20 +111,20 @@ namespace AdventOfCode2020
 
             private void Nop()
             {
-                _executionCount[_programCounter]++;
+                _instructionsRun.Add(_programCounter);
                 _programCounter++;
             }
 
             private void Acc(int operand)
             {
+                _instructionsRun.Add(_programCounter);
                 _accumulator += operand;
-                _executionCount[_programCounter]++;
                 _programCounter++;
             }
 
             private void Jmp(int operand)
             {
-                _executionCount[_programCounter]++;
+                _instructionsRun.Add(_programCounter);
                 _programCounter += operand;
             }
         }
