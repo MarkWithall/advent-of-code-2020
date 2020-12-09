@@ -47,12 +47,12 @@ namespace AdventOfCode2020
             throw new InvalidOperationException("No values found");
         }
 
-        private static long FirstError(IReadOnlyList<long> input, int preambleSize)
+        private static long FirstError(long[] input, int preambleSize)
         {
-            for (var i = preambleSize; i < input.Count; i++)
+            for (var i = preambleSize; i < input.Length; i++)
             {
                 var value = input[i];
-                var values = input.Take(i).Reverse().Take(preambleSize).Reverse().ToArray();
+                var values = input[(i - preambleSize)..i];
                 if (!IsValid(values, value))
                 {
                     return value;
