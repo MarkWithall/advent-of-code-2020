@@ -20,6 +20,33 @@ namespace AdventOfCode2020
             Assert.AreEqual(127, FirstError(Day9SampleInput, 5));
         }
 
+        [Test]
+        public void Part2()
+        {
+            Assert.AreEqual(137394018, ContiguousRangeSumming(Day9Input, 1038347917));
+        }
+
+        [Test]
+        public void Part2Sample()
+        {
+            Assert.AreEqual(62, ContiguousRangeSumming(Day9SampleInput, 127));
+        }
+
+        private static long ContiguousRangeSumming(long[] input, int value)
+        {
+            for (var start = 0; start < input.Length; start++)
+            for (var end = start + 1; end < input.Length; end++)
+            {
+                var values = input[start..end];
+                if (values.Sum() == value)
+                {
+                    return values.Min() + values.Max();
+                }
+            }
+
+            throw new InvalidOperationException("No values found");
+        }
+
         private static long FirstError(IReadOnlyList<long> input, int preambleSize)
         {
             for (var i = preambleSize; i < input.Count; i++)
