@@ -67,9 +67,7 @@ namespace AdventOfCode2020
             for (var i = 0; i < input.Count; i++)
             for (var j = i + 1; j < input.Count; j++)
             {
-                var e1 = input[i];
-                var e2 = input[j];
-                if (e1 + e2 == value)
+                if (input[i] + input[j] == value)
                 {
                     return true;
                 }
