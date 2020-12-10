@@ -43,8 +43,7 @@ namespace AdventOfCode2020
         {
             var deviceJoltage = input.Max() + 3;
             var joltages = input.OrderBy(j => j).Prepend(0).Append(deviceJoltage).ToArray();
-            var cache = new Dictionary<int, long>();
-            return FindArrangements(joltages.First(), joltages.Skip(1).ToArray(), joltages.Last(), cache);
+            return FindArrangements(0, joltages.Skip(1).ToArray(), deviceJoltage, new Dictionary<int, long>());
         }
 
         private static long FindArrangements(int currentJoltage, int[] remainingJoltages, int targetJoltage, IDictionary<int, long> cache)
