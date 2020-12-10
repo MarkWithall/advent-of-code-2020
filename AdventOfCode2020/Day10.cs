@@ -43,12 +43,12 @@ namespace AdventOfCode2020
         {
             var deviceJoltage = input.Max() + 3;
             var joltages = input.OrderBy(j => j).Prepend(0).Append(deviceJoltage).ToArray();
-            return FindArrangements(0, joltages.Skip(1).ToArray(), deviceJoltage, new Dictionary<int, long>());
+            return FindArrangements(0, joltages.Skip(1).ToArray(), new Dictionary<int, long>());
         }
 
-        private static long FindArrangements(int currentJoltage, int[] remainingJoltages, int targetJoltage, IDictionary<int, long> cache)
+        private static long FindArrangements(int currentJoltage, int[] remainingJoltages, IDictionary<int, long> cache)
         {
-            if (currentJoltage == targetJoltage)
+            if (!remainingJoltages.Any())
             {
                 return 1;
             }
@@ -60,7 +60,7 @@ namespace AdventOfCode2020
                 var joltage = neighbours[i];
                 if (!cache.TryGetValue(joltage, out var count))
                 {
-                    count = FindArrangements(joltage, remainingJoltages.Skip(i + 1).ToArray(), targetJoltage, cache);
+                    count = FindArrangements(joltage, remainingJoltages.Skip(i + 1).ToArray(), cache);
                     cache.Add(joltage, count);
                 }
 
