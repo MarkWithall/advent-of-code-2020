@@ -54,26 +54,21 @@ namespace AdventOfCode2020
                 return 1;
             }
 
-            var neighbours = Neighbours().ToArray();
+            var neighbours = remainingJoltages.TakeWhile(j => j - currentJoltage <= 3).ToArray();
             var sum = 0L;
             for (var i = 0; i < neighbours.Length; i++)
             {
                 var joltage = neighbours[i];
-                if (cache.TryGetValue(joltage, out var count))
+                if (!cache.TryGetValue(joltage, out var count))
                 {
-                    sum += count;
+                    count = FindArrangements(joltage, remainingJoltages.Skip(i + 1).ToArray(), targetJoltage, cache);
+                    cache.Add(joltage, count);
                 }
-                else
-                {
-                    var count2 = FindArrangements(joltage, remainingJoltages.Skip(i + 1).ToArray(), targetJoltage, cache);
-                    cache.Add(joltage, count2);
-                    sum += count2;
-                }
+
+                sum += count;
             }
 
             return sum;
-
-            IEnumerable<int> Neighbours() => remainingJoltages.TakeWhile(j => j - currentJoltage <= 3);
         }
 
         private static int ProductOf1JoltAnd3JoltDifferenceCounts(int[] input)
