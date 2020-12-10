@@ -48,26 +48,25 @@ namespace AdventOfCode2020
 
         private static long FindArrangements(int currentJoltage, int[] remainingJoltages, IDictionary<int, long> cache)
         {
-            if (!remainingJoltages.Any())
+            if (remainingJoltages.Any())
             {
-                return 1;
+                var neighbours = remainingJoltages.TakeWhile(j => j - currentJoltage <= 3);
+                return neighbours.Select((n, i) => (joltage: n, index: i)).Sum(n => GetCount(n.joltage, n.index));
             }
 
-            var neighbours = remainingJoltages.TakeWhile(j => j - currentJoltage <= 3).ToArray();
-            var sum = 0L;
-            for (var i = 0; i < neighbours.Length; i++)
+            return 1;
+
+            long GetCount(int joltage, int index)
             {
-                var joltage = neighbours[i];
-                if (!cache.TryGetValue(joltage, out var count))
+                if (cache.TryGetValue(joltage, out var count))
                 {
-                    count = FindArrangements(joltage, remainingJoltages.Skip(i + 1).ToArray(), cache);
-                    cache.Add(joltage, count);
+                    return count;
                 }
 
-                sum += count;
+                count = FindArrangements(joltage, remainingJoltages.Skip(index + 1).ToArray(), cache);
+                cache.Add(joltage, count);
+                return count;
             }
-
-            return sum;
         }
 
         private static int ProductOf1JoltAnd3JoltDifferenceCounts(int[] input)
