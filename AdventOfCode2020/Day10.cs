@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 
 namespace AdventOfCode2020
@@ -17,9 +18,62 @@ namespace AdventOfCode2020
         {
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(35, ProductOf1JoltAnd3JoltDifferenceCounts(Day10SampleInput));
+                Assert.AreEqual(35, ProductOf1JoltAnd3JoltDifferenceCounts(Day10SampleInput1));
                 Assert.AreEqual(220, ProductOf1JoltAnd3JoltDifferenceCounts(Day10SampleInput2));
             });
+        }
+
+        [Test]
+        public void Part2()
+        {
+            Assert.AreEqual(3100448333024, ArrangementsToConnect(Day10Input));
+        }
+
+        [Test]
+        public void Part2Sample()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(8, ArrangementsToConnect(Day10SampleInput1));
+                Assert.AreEqual(19208, ArrangementsToConnect(Day10SampleInput2));
+            });
+        }
+
+        private static long ArrangementsToConnect(int[] input)
+        {
+            var deviceJoltage = input.Max() + 3;
+            var joltages = input.OrderBy(j => j).Prepend(0).Append(deviceJoltage).ToArray();
+            var cache = new Dictionary<int, long>();
+            return FindArrangements(joltages.First(), joltages.Skip(1).ToArray(), joltages.Last(), cache);
+        }
+
+        private static long FindArrangements(int currentJoltage, int[] remainingJoltages, int targetJoltage, IDictionary<int, long> cache)
+        {
+            if (currentJoltage == targetJoltage)
+            {
+                return 1;
+            }
+
+            var neighbours = Neighbours().ToArray();
+            var sum = 0L;
+            for (var i = 0; i < neighbours.Length; i++)
+            {
+                var joltage = neighbours[i];
+                if (cache.TryGetValue(joltage, out var count))
+                {
+                    sum += count;
+                }
+                else
+                {
+                    var count2 = FindArrangements(joltage, remainingJoltages.Skip(i + 1).ToArray(), targetJoltage, cache);
+                    cache.Add(joltage, count2);
+                    sum += count2;
+                }
+            }
+
+            return sum;
+
+            IEnumerable<int> Neighbours() => remainingJoltages.TakeWhile(j => j - currentJoltage <= 3);
         }
 
         private static int ProductOf1JoltAnd3JoltDifferenceCounts(int[] input)
@@ -31,7 +85,7 @@ namespace AdventOfCode2020
             return lookup[1].Count() * lookup[3].Count();
         }
 
-        private static readonly int[] Day10SampleInput =
+        private static readonly int[] Day10SampleInput1 =
         {
             16,
             10,
