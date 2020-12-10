@@ -51,12 +51,12 @@ namespace AdventOfCode2020
             if (remainingJoltages.Any())
             {
                 var neighbours = remainingJoltages.TakeWhile(j => j - currentJoltage <= 3);
-                return neighbours.Select((n, i) => (joltage: n, index: i)).Sum(n => GetCount(n.joltage, n.index));
+                return neighbours.Select((n, i) => (joltage: n, index: i)).Sum(n => Count(n.joltage, n.index));
             }
 
             return 1;
 
-            long GetCount(int joltage, int index)
+            long Count(int joltage, int index)
             {
                 if (cache.TryGetValue(joltage, out var count))
                 {
