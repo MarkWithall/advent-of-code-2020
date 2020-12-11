@@ -18,10 +18,22 @@ namespace AdventOfCode2020
             Assert.AreEqual(37, SimulateUntilStable(Day11SampleInput));
         }
 
-        private static int SimulateUntilStable(string[] input)
+        [Test]
+        public void Part2()
+        {
+            Assert.AreEqual(2176, SimulateUntilStable(Day11Input, false));
+        }
+
+        [Test]
+        public void Part2Sample()
+        {
+            Assert.AreEqual(26, SimulateUntilStable(Day11SampleInput, false));
+        }
+
+        private static int SimulateUntilStable(string[] input, bool part1 = true)
         {
             var seatingArea = SeatingArea.Create(input);
-            seatingArea.SimulateUntilStable();
+            seatingArea.SimulateUntilStable(part1);
             return seatingArea.OccupiedSeats();
         }
 
@@ -67,11 +79,11 @@ namespace AdventOfCode2020
                 return occupied;
             }
 
-            public void SimulateUntilStable()
+            public void SimulateUntilStable(bool part1 = true)
             {
                 while (true)
                 {
-                    var nextIteration = NextIteration();
+                    var nextIteration = NextIteration(part1);
                     if (IsSame(nextIteration, _area))
                     {
                         break;
@@ -95,13 +107,19 @@ namespace AdventOfCode2020
                 return true;
             }
 
-            private char[,] NextIteration()
+            private char[,] NextIteration(bool part1)
             {
                 var nextIteration = new char[_area.GetLength(0), _area.GetLength(1)];
                 for (var row = 0; row < Rows; row++)
                 for (var column = 0; column < Columns; column++)
                 {
-                    var newState = Cell(row, column) switch
+                    nextIteration[row + 1, column + 1] = part1 ? NewStatePart1(row, column) : NewStatePart2(row, column);
+                }
+
+                return nextIteration;
+
+                char NewStatePart1(int row, int column) =>
+                    Cell(row, column) switch
                     {
                         Floor => Floor,
                         EmptySeat when NeighbouringOccupiedSeatCount(row, column) == 0 => OccupiedSeat,
@@ -109,10 +127,14 @@ namespace AdventOfCode2020
                         _ => Cell(row, column)
                     };
 
-                    nextIteration[row + 1, column + 1] = newState;
-                }
-
-                return nextIteration;
+                char NewStatePart2(int row, int column) =>
+                    Cell(row, column) switch
+                    {
+                        Floor => Floor,
+                        EmptySeat when OccupiedSeatsVisibleFrom(row, column) == 0 => OccupiedSeat,
+                        OccupiedSeat when OccupiedSeatsVisibleFrom(row, column) >= 5 => EmptySeat,
+                        _ => Cell(row, column)
+                    };
             }
 
             private int NeighbouringOccupiedSeatCount(int row, int column)
@@ -130,6 +152,41 @@ namespace AdventOfCode2020
                 };
 
                 return neighbours.Count(n => n == OccupiedSeat);
+            }
+
+            private int OccupiedSeatsVisibleFrom(int row, int column)
+            {
+                return OccupiedSeatsVisibleInDirection(-1, -1) +
+                       OccupiedSeatsVisibleInDirection(-1, 0) +
+                       OccupiedSeatsVisibleInDirection(-1, +1) +
+                       OccupiedSeatsVisibleInDirection(0, -1) +
+                       OccupiedSeatsVisibleInDirection(0, +1) +
+                       OccupiedSeatsVisibleInDirection(+1, -1) +
+                       OccupiedSeatsVisibleInDirection(+1, 0) +
+                       OccupiedSeatsVisibleInDirection(+1, +1);
+
+                int OccupiedSeatsVisibleInDirection(int dRow, int dColumn)
+                {
+                    var r = row + dRow;
+                    var c = column + dColumn;
+                    while (0 <= r && r < Rows && 0 <= c && c < Columns)
+                    {
+                        if (Cell(r, c) == OccupiedSeat)
+                        {
+                            return 1;
+                        }
+
+                        if (Cell(r, c) == EmptySeat)
+                        {
+                            return 0;
+                        }
+
+                        r += dRow;
+                        c += dColumn;
+                    }
+
+                    return 0;
+                }
             }
 
             private int Rows => _area.GetLength(0) - 2;
