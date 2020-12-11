@@ -104,8 +104,8 @@ namespace AdventOfCode2020
                     var newState = Cell(row, column) switch
                     {
                         Floor => Floor,
-                        EmptySeat when NeibouringOccupiedSeatCount(row, column) == 0 => OccupiedSeat,
-                        OccupiedSeat when NeibouringOccupiedSeatCount(row, column) >= 4 => EmptySeat,
+                        EmptySeat when NeighbouringOccupiedSeatCount(row, column) == 0 => OccupiedSeat,
+                        OccupiedSeat when NeighbouringOccupiedSeatCount(row, column) >= 4 => EmptySeat,
                         _ => Cell(row, column)
                     };
 
@@ -115,7 +115,7 @@ namespace AdventOfCode2020
                 return nextIteration;
             }
 
-            private int NeibouringOccupiedSeatCount(int row, int column)
+            private int NeighbouringOccupiedSeatCount(int row, int column)
             {
                 char[] neighbours =
                 {
