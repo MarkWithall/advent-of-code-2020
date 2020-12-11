@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Collections.Generic;
+using NUnit.Framework;
 using System.Linq;
 
 namespace AdventOfCode2020
@@ -167,25 +168,19 @@ namespace AdventOfCode2020
 
                 int OccupiedSeatsVisibleInDirection(int dRow, int dColumn)
                 {
+                    return CellsInDirection(dRow, dColumn).FirstOrDefault(c => c != Floor) == OccupiedSeat ? 1 : 0;
+                }
+
+                IEnumerable<char> CellsInDirection(int dRow, int dColumn)
+                {
                     var r = row + dRow;
                     var c = column + dColumn;
                     while (0 <= r && r < Rows && 0 <= c && c < Columns)
                     {
-                        if (Cell(r, c) == OccupiedSeat)
-                        {
-                            return 1;
-                        }
-
-                        if (Cell(r, c) == EmptySeat)
-                        {
-                            return 0;
-                        }
-
+                        yield return Cell(r, c);
                         r += dRow;
                         c += dColumn;
                     }
-
-                    return 0;
                 }
             }
 
