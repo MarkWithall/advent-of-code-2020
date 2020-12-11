@@ -101,22 +101,15 @@ namespace AdventOfCode2020
                 for (var row = 0; row < Rows; row++)
                 for (var column = 0; column < Columns; column++)
                 {
-                    if (Cell(row, column) == Floor)
+                    var newState = Cell(row, column) switch
                     {
-                        nextIteration[row + 1, column + 1] = Floor;
-                    }
-                    else if (Cell(row, column) == EmptySeat && NeibouringOccupiedSeatCount(row, column) == 0)
-                    {
-                        nextIteration[row + 1, column + 1] = OccupiedSeat;
-                    }
-                    else if (Cell(row, column) == OccupiedSeat && NeibouringOccupiedSeatCount(row, column) >= 4)
-                    {
-                        nextIteration[row + 1, column + 1] = EmptySeat;
-                    }
-                    else
-                    {
-                        nextIteration[row + 1, column + 1] = Cell(row, column);
-                    }
+                        Floor => Floor,
+                        EmptySeat when NeibouringOccupiedSeatCount(row, column) == 0 => OccupiedSeat,
+                        OccupiedSeat when NeibouringOccupiedSeatCount(row, column) >= 4 => EmptySeat,
+                        _ => Cell(row, column)
+                    };
+
+                    nextIteration[row + 1, column + 1] = newState;
                 }
 
                 return nextIteration;
