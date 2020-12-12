@@ -18,6 +18,18 @@ namespace AdventOfCode2020
             Assert.AreEqual(25, ManhattenDistanceAfterNavigation(Day12SampleInput));
         }
 
+        [Test]
+        public void Part2()
+        {
+            Assert.AreEqual(52866, ManhattenDistanceAfterWaypointNavigation(Day12Input));
+        }
+
+        [Test]
+        public void Part2Sample()
+        {
+            Assert.AreEqual(286, ManhattenDistanceAfterWaypointNavigation(Day12SampleInput));
+        }
+
         private static int ManhattenDistanceAfterNavigation(string[] input)
         {
             var east = 0;
@@ -108,6 +120,92 @@ namespace AdventOfCode2020
             }
 
             return Math.Abs(east) + Math.Abs(north);
+        }
+
+        private static int ManhattenDistanceAfterWaypointNavigation(string[] input)
+        {
+            var shipEast = 0;
+            var shipNorth = 0;
+            var waypointEast = 10;
+            var waypointNorth = 1;
+
+            foreach (var instruction in input)
+            {
+                var action = instruction[0];
+                var value = int.Parse(instruction[1..]);
+
+                switch (action)
+                {
+                    case 'N':
+                    {
+                        waypointNorth += value;
+                        break;
+                    }
+                    case 'S':
+                    {
+                        waypointNorth -= value;
+                        break;
+                    }
+                    case 'E':
+                    {
+                        waypointEast += value;
+                        break;
+                    }
+                    case 'W':
+                    {
+                        waypointEast -= value;
+                        break;
+                    }
+                    case 'L':
+                    {
+                        (waypointEast, waypointNorth) = (shipEast + shipNorth - waypointNorth, waypointEast + shipNorth - shipEast);
+
+                        if (value > 90)
+                        {
+                            (waypointEast, waypointNorth) = (shipEast + shipNorth - waypointNorth, waypointEast + shipNorth - shipEast);
+                        }
+
+                        if (value > 180)
+                        {
+                            (waypointEast, waypointNorth) = (shipEast + shipNorth - waypointNorth, waypointEast + shipNorth - shipEast);
+                        }
+
+                        break;
+                    }
+                    case 'R':
+                    {
+                        (waypointEast, waypointNorth) = (shipEast + shipNorth - waypointNorth, waypointEast + shipNorth - shipEast);
+
+                        if (value < 270)
+                        {
+                            (waypointEast, waypointNorth) = (shipEast + shipNorth - waypointNorth, waypointEast + shipNorth - shipEast);
+                        }
+
+                        if (value < 180)
+                        {
+                            (waypointEast, waypointNorth) = (shipEast + shipNorth - waypointNorth, waypointEast + shipNorth - shipEast);
+                        }
+
+                        break;
+                    }
+                    case 'F':
+                    {
+                        var deltaEast = (waypointEast - shipEast) * value;
+                        var deltaNorth = (waypointNorth - shipNorth) * value;
+                        shipEast += deltaEast;
+                        shipNorth += deltaNorth;
+                        waypointEast += deltaEast;
+                        waypointNorth += deltaNorth;
+                        break;
+                    }
+                    default:
+                    {
+                        throw new InvalidOperationException("Not handled");
+                    }
+                }
+            }
+
+            return Math.Abs(shipEast) + Math.Abs(shipNorth);
         }
 
         private static readonly string[] Day12SampleInput =
