@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace AdventOfCode2020
 {
-    [TestFixture(TestName = "")]
+    [TestFixture(TestName = "Day 12: Rain Risk")]
     public sealed class Day12
     {
         [Test]
