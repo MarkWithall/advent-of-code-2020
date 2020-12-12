@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace AdventOfCode2020
 {
     [TestFixture(TestName = "Day 9: Encoding Error")]
-    public class Day9
+    public sealed class Day9
     {
         [Test]
         public void Part1()

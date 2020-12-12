@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace AdventOfCode2020
 {
     [TestFixture(TestName = "Day 8: Handheld Halting")]
-    public class Day8
+    public sealed class Day8
     {
         [Test]
         public void Part1()

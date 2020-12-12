@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace AdventOfCode2020
 {
     [TestFixture(TestName = "Day 6: Custom Customs")]
-    public class Day6
+    public sealed class Day6
     {
         [Test]
         public void Part1()
