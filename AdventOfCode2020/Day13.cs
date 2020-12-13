@@ -76,17 +76,6 @@ namespace AdventOfCode2020
             };
         }
 
-        [Test]
-        public void TestOffsetAndStep()
-        {
-            Assert.Multiple(() =>
-            {
-                Assert.AreEqual(18, OffsetAndStep(9, 0, 15, 3).offset);
-                Assert.AreEqual(120, OffsetAndStep(30, 0, 38, 6).offset);
-                Assert.Catch<Exception>(() => OffsetAndStep(9, 0, 12, 5));
-            });
-        }
-
         private static (BigInteger offset, BigInteger step) OffsetAndStep(BigInteger a, BigInteger aOffset, BigInteger b, BigInteger bOffset)
         {
             var (gcd, aMultiplier) = ExtendedGcd(a, b);
@@ -131,14 +120,12 @@ namespace AdventOfCode2020
         {
             public long Id { get; }
             public long Index { get; }
-            bool DepartsAtTime(long time);
         }
 
         private sealed class UnknownBus : IBus
         {
             public long Id { get; } = -1;
             public long Index { get; } = -1;
-            public bool DepartsAtTime(long time) => true;
         }
 
         private sealed class Bus : IBus
@@ -147,7 +134,6 @@ namespace AdventOfCode2020
 
             public long Id { get; }
             public long Index { get; }
-            public bool DepartsAtTime(long time) => (time + Index) % Id == 0;
         }
 
         private static readonly string[] Day13SampleInput =
