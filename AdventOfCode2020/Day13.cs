@@ -24,6 +24,7 @@ namespace AdventOfCode2020
         public void Part2()
         {
             Assert.AreEqual(new BigInteger(807435693182510), EarliestSequentialDeparture(Day13Input[1]));
+            Assert.AreEqual(807435693182510, Crt(Day13Input[1]));
         }
 
         [Test]
@@ -33,6 +34,7 @@ namespace AdventOfCode2020
             {
                 Assert.AreEqual(new BigInteger(1068781), EarliestSequentialDeparture(Day13SampleInput[1]));
                 Assert.AreEqual(new BigInteger(3417), EarliestSequentialDeparture("17,x,13,19"));
+                Assert.AreEqual(3417, Crt("17,x,13,19"));
                 Assert.AreEqual(new BigInteger(754018), EarliestSequentialDeparture("67,7,59,61"));
                 Assert.AreEqual(new BigInteger(779210), EarliestSequentialDeparture("67,x,7,59,61"));
                 Assert.AreEqual(new BigInteger(1261476), EarliestSequentialDeparture("67,7,x,59,61"));
@@ -74,6 +76,44 @@ namespace AdventOfCode2020
                 "x" => new UnknownBus(),
                 _ => new Bus(long.Parse(id), index)
             };
+        }
+
+        private static long Crt(string input)
+        {
+            var busIds = input.Split(',').Select((id, index) => (id, index)).Where(b => b.id != "x").Select(b => (id: long.Parse(b.id), index: (long) b.index)).ToArray();
+            var n = busIds.Select(b => b.id).ToArray();
+            var a = busIds.Select(b => b.index).ToArray();
+            return ChineseRemainderTheorem.Solve(n, a);
+        }
+
+        private static class ChineseRemainderTheorem
+        {
+            public static long Solve(long[] n, long[] a)
+            {
+                var product = n.Aggregate(1L, (i, j) => i * j);
+                var sum = 0L;
+                for (var i = 0; i < n.Length; i++)
+                {
+                    var p = product / n[i];
+                    sum += a[i] * ModularMultiplicativeInverse(p, n[i]) * p;
+                }
+
+                return (sum - 2 * (sum % product)) % product;
+
+                static long ModularMultiplicativeInverse(long a, long mod)
+                {
+                    var b = a % mod;
+                    for (var x = 1; x < mod; x++)
+                    {
+                        if (b * x % mod == 1)
+                        {
+                            return x;
+                        }
+                    }
+
+                    return 1;
+                }
+            }
         }
 
         private static (BigInteger offset, BigInteger step) OffsetAndStep(BigInteger a, BigInteger aOffset, BigInteger b, BigInteger bOffset)
