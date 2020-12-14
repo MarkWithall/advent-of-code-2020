@@ -59,7 +59,7 @@ namespace AdventOfCode2020
 
         private static class PolicyParser
         {
-            private static readonly Regex PolicyRegex = new Regex(@"^(?<i1>\d+)\-(?<i2>\d+) (?<ch>[a-z])$", RegexOptions.Compiled);
+            private static readonly Regex PolicyRegex = new(@"^(?<i1>\d+)\-(?<i2>\d+) (?<ch>[a-z])$", RegexOptions.Compiled);
 
             public static (int i1, int i2, char ch) Parse(string policyString)
             {

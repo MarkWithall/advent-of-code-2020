@@ -46,8 +46,8 @@ namespace AdventOfCode2020
 
         private sealed class BagFactory : IBagLookup
         {
-            private static readonly Regex BagRule = new Regex(@"^(?<colour>[a-z ]+) bags contain (?<contents>.*)\.$", RegexOptions.Compiled);
-            private static readonly Regex BagContent = new Regex(@"(?<count>\d+) (?<colour>[a-z ]+) bags?", RegexOptions.Compiled);
+            private static readonly Regex BagRule = new(@"^(?<colour>[a-z ]+) bags contain (?<contents>.*)\.$", RegexOptions.Compiled);
+            private static readonly Regex BagContent = new(@"(?<count>\d+) (?<colour>[a-z ]+) bags?", RegexOptions.Compiled);
 
             private readonly IDictionary<string, Bag> _bagLookup = new Dictionary<string, Bag>();
 

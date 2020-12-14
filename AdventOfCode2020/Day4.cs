@@ -79,10 +79,10 @@ namespace AdventOfCode2020
             private static readonly ISet<string> MandatoryFields = new HashSet<string> {"byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"};
             //private static readonly ISet<string> OptionalFields = new HashSet<string> {"cid"};
 
-            private static readonly Regex HeightFormat = new Regex(@"^(?<height>\d+)(?<unit>cm|in)$", RegexOptions.Compiled);
-            private static readonly Regex HairColourFormat = new Regex(@"^#[0-9a-f]{6}$", RegexOptions.Compiled);
+            private static readonly Regex HeightFormat = new(@"^(?<height>\d+)(?<unit>cm|in)$", RegexOptions.Compiled);
+            private static readonly Regex HairColourFormat = new(@"^#[0-9a-f]{6}$", RegexOptions.Compiled);
             private static readonly ISet<string> ValidEyeColours = new HashSet<string> {"amb", "blu", "brn", "gry", "grn", "hzl", "oth"};
-            private static readonly Regex PassportIdFormat = new Regex(@"^\d{9}$", RegexOptions.Compiled);
+            private static readonly Regex PassportIdFormat = new(@"^\d{9}$", RegexOptions.Compiled);
 
             private readonly IDictionary<string, string> _fields;
 
