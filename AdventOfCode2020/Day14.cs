@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 
@@ -17,10 +18,22 @@ namespace AdventOfCode2020
         [Test]
         public void Part1Sample()
         {
-            Assert.AreEqual(165, SumOfMemory(Day14SampleInput));
+            Assert.AreEqual(165, SumOfMemory(Day14SampleInput1));
         }
 
-        private static long SumOfMemory(string[] input)
+        [Test]
+        public void Part2()
+        {
+            Assert.AreEqual(5272149590143, SumOfMemory(Day14Input, false, true));
+        }
+
+        [Test]
+        public void Part2Sample()
+        {
+            Assert.AreEqual(208, SumOfMemory(Day14SampleInput2, false, true));
+        }
+
+        private static long SumOfMemory(string[] input, bool maskValue = true, bool maskAddress = false)
         {
             var maskRegex = new Regex(@"^mask = (?<mask>[X01]{36})$", RegexOptions.Compiled);
             var writeRegex = new Regex(@"^mem\[(?<address>\d+)\] = (?<value>\d+)$", RegexOptions.Compiled);
@@ -42,7 +55,11 @@ namespace AdventOfCode2020
                     var address = long.Parse(writeMatch.Groups["address"].Value);
                     var value = long.Parse(writeMatch.Groups["value"].Value);
 
-                    memory[address] = MaskValue(value, currentMask);
+                    var addresses = maskAddress ? MaskAddress(address, currentMask) : new[] {address};
+                    foreach (var addr in addresses)
+                    {
+                        memory[addr] = maskValue ? MaskValue(value, currentMask) : value;
+                    }
                 }
             }
 
@@ -69,12 +86,96 @@ namespace AdventOfCode2020
             }
         }
 
-        private static readonly string[] Day14SampleInput =
+        [Test]
+        public void MemoryMask()
+        {
+            Assert.Multiple(() =>
+            {
+                CollectionAssert.AreEquivalent(new[] {26, 27, 58, 59}, MaskAddress(42, "000000000000000000000000000000X1001X"));
+                CollectionAssert.AreEquivalent(new[] {16, 17, 18, 19, 24, 25, 26, 27}, MaskAddress(26, "00000000000000000000000000000000X0XX"));
+            });
+        }
+
+        private static IEnumerable<long> MaskAddress(long address, string mask)
+        {
+            var addrString = new string(ToString(address).Reverse().ToArray()).PadLeft(36, '0');
+            var maskedString = new string(addrString.Zip(mask).Select(p =>
+            {
+                if (p.Second == 'X') return 'X';
+                if (p.Second == '1') return '1';
+                return p.First;
+            }).ToArray());
+
+            foreach (var str in GetAllStrings(maskedString))
+            {
+                yield return ToLong(str);
+            }
+
+            static IEnumerable<string> GetAllStrings(string maskedString)
+            {
+                var indexOfFirstX = maskedString.IndexOf('X');
+                if (indexOfFirstX == -1)
+                {
+                    yield return maskedString;
+                }
+                else
+                {
+                    var version0 = new StringBuilder(maskedString) {[indexOfFirstX] = '0'}.ToString();
+                    foreach (var str in GetAllStrings(version0))
+                    {
+                        yield return str;
+                    }
+
+                    var version1 = new StringBuilder(maskedString) {[indexOfFirstX] = '1'}.ToString();
+                    foreach (var str in GetAllStrings(version1))
+                    {
+                        yield return str;
+                    }
+                }
+            }
+
+            static IEnumerable<char> ToString(long value)
+            {
+                long currentBit = 1;
+                while (currentBit < value)
+                {
+                    yield return (currentBit & value) == 0 ? '0' : '1';
+                    currentBit *= 2;
+                }
+            }
+
+            static long ToLong(string str)
+            {
+                long value = 0;
+                long currentBit = 1;
+                foreach (var c in str.Reverse())
+                {
+                    if (c == '1')
+                    {
+                        value += currentBit;
+                    }
+
+                    currentBit *= 2;
+                }
+
+                return value;
+            }
+        }
+
+        private static readonly string[] Day14SampleInput1 =
         {
             "mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X",
             "mem[8] = 11",
             "mem[7] = 101",
             "mem[8] = 0"
+        };
+
+        private static readonly string[] Day14SampleInput2 =
+        {
+            "mask = 000000000000000000000000000000X1001X",
+            "mem[42] = 100",
+            "mask = 00000000000000000000000000000000X0XX",
+            "mem[26] = 1"
         };
 
         private static readonly string[] Day14Input =
