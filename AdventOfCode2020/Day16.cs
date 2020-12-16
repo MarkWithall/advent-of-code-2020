@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
@@ -16,7 +17,24 @@ namespace AdventOfCode2020
         [Test]
         public void Part1Sample()
         {
-            Assert.AreEqual(71, ScanningErrorRate(Day16SampleInput));
+            Assert.AreEqual(71, ScanningErrorRate(Day16SampleInput1));
+        }
+
+        [Test]
+        public void Part2()
+        {
+            var ticket = DecodeTicket(Day16Input);
+            var productOfDeparture = ticket.Keys.Where(k => k.StartsWith("departure ")).Aggregate(1L, (product, current) => product * ticket[current]);
+            Assert.AreEqual(491924517533, productOfDeparture);
+        }
+
+        [Test]
+        public void Part2Sample()
+        {
+            var ticket = DecodeTicket(Day16SampleInput2);
+            Assert.AreEqual(12, ticket["class"]);
+            Assert.AreEqual(11, ticket["row"]);
+            Assert.AreEqual(13, ticket["seat"]);
         }
 
         private static long ScanningErrorRate(string[] input)
@@ -38,7 +56,55 @@ namespace AdventOfCode2020
                 !(rule[0].Item1 <= n && n <= rule[0].Item2 || rule[1].Item1 <= n && n <= rule[1].Item2);
         }
 
-        private static readonly string[] Day16SampleInput =
+        private sealed record Rule(string Name, (long, long)[] Ranges, int[] PossibleIndices)
+        {
+            public override string ToString() => $"{Name}: {string.Join(",", PossibleIndices)}";
+        }
+
+        private static IDictionary<string, long> DecodeTicket(string[] input)
+        {
+            var ruleStrings = input.TakeWhile(i => i != "").ToArray();
+            var yourTicketString = input[ruleStrings.Length + 2];
+            var nearbyTicketsStrings = input[(ruleStrings.Length + 5)..];
+
+            var rules = ruleStrings.Select(s =>
+            {
+                var fields = s.Split(new[] {": "}, 2, StringSplitOptions.None);
+                var ranges = fields[1].Split(" or ").Select(r =>
+                {
+                    var parts = r.Split('-');
+                    return (long.Parse(parts[0]), long.Parse(parts[1]));
+                }).ToArray();
+                return (field: fields[0], ranges);
+            }).ToArray();
+
+            var yourTicket = yourTicketString.Split(',').Select(long.Parse).ToArray();
+
+            var nearbyTickets = nearbyTicketsStrings.Select(t => t.Split(',').Select(long.Parse).ToArray()).ToArray();
+            var validNearbyTickets = nearbyTickets.Where(t => t.All(n => rules.Any(r => Match(n, r.ranges)))).ToArray();
+
+            var rls = rules.Select(r => new Rule(
+                r.field,
+                r.ranges,
+                Enumerable.Range(0, yourTicket.Length).Where(i => validNearbyTickets.All(t => Match(t[i], r.ranges))).ToArray()
+            )).OrderBy(r => r.PossibleIndices.Length).ToArray();
+
+            var ticket = new Dictionary<string, long>();
+            var used = new HashSet<int>();
+            foreach (var rule in rls)
+            {
+                var index = rule.PossibleIndices.Except(used).Single();
+                ticket.Add(rule.Name, yourTicket[index]);
+                used.Add(index);
+            }
+
+            return ticket;
+
+            static bool Match(long n, (long, long)[] rule) =>
+                rule[0].Item1 <= n && n <= rule[0].Item2 || rule[1].Item1 <= n && n <= rule[1].Item2;
+        }
+
+        private static readonly string[] Day16SampleInput1 =
         {
             "class: 1-3 or 5-7",
             "row: 6-11 or 33-44",
@@ -52,6 +118,21 @@ namespace AdventOfCode2020
             "40,4,50",
             "55,2,20",
             "38,6,12"
+        };
+
+        private static readonly string[] Day16SampleInput2 =
+        {
+            "class: 0-1 or 4-19",
+            "row: 0-5 or 8-19",
+            "seat: 0-13 or 16-19",
+            "",
+            "your ticket:",
+            "11,12,13",
+            "",
+            "nearby tickets:",
+            "3,9,18",
+            "15,1,5",
+            "5,14,9"
         };
 
         private static readonly string[] Day16Input =
