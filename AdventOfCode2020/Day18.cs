@@ -25,6 +25,23 @@ namespace AdventOfCode2020
             Assert.AreEqual(expectedResult, EvaluateExpression(expression));
         }
 
+        [Test]
+        public void Part2()
+        {
+            Assert.AreEqual(136824720421264, Day18Input.Sum(EvaluateExpression2));
+        }
+
+        [TestCase("1 + 2 * 3 + 4 * 5 + 6", 231)]
+        [TestCase("1 + (2 * 3) + (4 * (5 + 6))", 51)]
+        [TestCase("2 * 3 + (4 * 5)", 46)]
+        [TestCase("5 + (8 * 3 + 9 + 3 * 4 * 3)", 1445)]
+        [TestCase("5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))", 669060)]
+        [TestCase("((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2", 23340)]
+        public void Part2Sample(string expression, long expectedResult)
+        {
+            Assert.AreEqual(expectedResult, EvaluateExpression2(expression));
+        }
+
         private static long EvaluateExpression(string expression)
         {
             var tokens = Lex(expression).ToArray();
@@ -52,7 +69,7 @@ namespace AdventOfCode2020
                     {
                         return lhs;
                     }
-                    
+
                     tokens.MoveNext();
                     lhs = new BinaryOpNode(lhs, ParseLeaf(), op);
                 }
@@ -70,6 +87,81 @@ namespace AdventOfCode2020
                 {
                     tokens.MoveNext();
                     var node = ParseBinary();
+                    if (tokens.CurrentToken is not CloseParenthesisToken) throw new InvalidOperationException("Missing close parenthesis");
+                    tokens.MoveNext();
+                    return node;
+                }
+
+                throw new InvalidOperationException("Not a leaf");
+            }
+        }
+
+        private static long EvaluateExpression2(string expression)
+        {
+            var tokens = Lex(expression).ToArray();
+            return Parse2(new Tokens(tokens)).Evaluate();
+        }
+
+        private static INode Parse2(Tokens tokens)
+        {
+            return ParseMultiply();
+
+            INode ParseMultiply()
+            {
+                var lhs = ParseAdd();
+
+                while (true)
+                {
+                    Func<long, long, long>? op = tokens.CurrentToken switch
+                    {
+                        MultiplyToken => (a, b) => a * b,
+                        _ => null
+                    };
+
+                    if (op is null)
+                    {
+                        return lhs;
+                    }
+
+                    tokens.MoveNext();
+                    lhs = new BinaryOpNode(lhs, ParseAdd(), op);
+                }
+            }
+
+            INode ParseAdd()
+            {
+                var lhs = ParseLeaf();
+
+                while (true)
+                {
+                    Func<long, long, long>? op = tokens.CurrentToken switch
+                    {
+                        PlusToken => (a, b) => a + b,
+                        _ => null
+                    };
+
+                    if (op is null)
+                    {
+                        return lhs;
+                    }
+
+                    tokens.MoveNext();
+                    lhs = new BinaryOpNode(lhs, ParseLeaf(), op);
+                }
+            }
+
+            INode ParseLeaf()
+            {
+                if (tokens.CurrentToken is NumberToken number)
+                {
+                    tokens.MoveNext();
+                    return new NumberNode(number.Value);
+                }
+
+                if (tokens.CurrentToken is OpenParenthesisToken)
+                {
+                    tokens.MoveNext();
+                    var node = ParseMultiply();
                     if (tokens.CurrentToken is not CloseParenthesisToken) throw new InvalidOperationException("Missing close parenthesis");
                     tokens.MoveNext();
                     return node;
