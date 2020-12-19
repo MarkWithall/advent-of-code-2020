@@ -25,7 +25,7 @@ namespace AdventOfCode2020
             Assert.AreEqual(1680, ActiveCubes4D(Day17Input, 6));
         }
 
-        [Test]
+        [Test, Ignore("Slow")]
         public void Part2Sample()
         {
             Assert.AreEqual(848, ActiveCubes4D(Day17SampleInput, 6));
