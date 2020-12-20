@@ -20,7 +20,7 @@ namespace AdventOfCode2020
             Assert.AreEqual(127, FirstError(Day9SampleInput, 5));
         }
 
-        [Test]
+        [Test, Ignore("Slow")]
         public void Part2()
         {
             Assert.AreEqual(137394018, ContiguousRangeSumming(Day9Input, 1038347917));
