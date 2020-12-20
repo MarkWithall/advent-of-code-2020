@@ -44,7 +44,7 @@ namespace AdventOfCode2020
                 rulesDictionary.Add(rule.Number, rule);
             }
 
-            return messages.Where(rulesDictionary[0].Matches).ToArray().Count();
+            return messages.Count(rulesDictionary[0].Matches);
 
             IRule ParseRule(string ruleString)
             {

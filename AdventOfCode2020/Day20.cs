@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 
@@ -8,29 +11,229 @@ namespace AdventOfCode2020
     [TestFixture(TestName = "Day 20: Jurassic Jigsaw")]
     public sealed class Day20
     {
-        [Test]
+        [Test, Ignore("Slow")]
         public void Part1()
         {
             Assert.AreEqual(7492183537913, ProductOfCorners(Day20Input));
         }
 
-        [Test]
+        [Test, Ignore("Slow")]
         public void Part1Sample()
         {
             Assert.AreEqual(20899048083289, ProductOfCorners(Day20SampleInput));
         }
 
-        private static long ProductOfCorners(string[] input)
+        [Test, Ignore("Slow")]
+        public void Part2()
+        {
+            Assert.AreEqual(2323, WaterRoughness(Day20Input));
+        }
+
+        [Test, Ignore("Slow")]
+        public void Part2Sample()
+        {
+            Assert.AreEqual(273, WaterRoughness(Day20SampleInput));
+        }
+
+        private static long ProductOfCorners(string[] input) =>
+            RelativeTiles(input)
+                .Where(kvp => kvp.Value.Count == 2)
+                .Aggregate(1L, (product, current) => product * current.Key.Id);
+
+        private static long WaterRoughness(string[] input)
+        {
+            var relativeTiles = RelativeTiles(input);
+
+            var image = CreateImage(relativeTiles);
+            Debug.WriteLine(string.Join(Environment.NewLine, image));
+
+            const long seaMonsterSize = 15;
+            var imageTile = new Tile(-1, image);
+            var seaMonsters = imageTile.Orientations.Max(i => CountSeaMonsters(i.Content));
+            var hashes = CountHashes(image);
+
+            return hashes - seaMonsters * seaMonsterSize;
+        }
+
+        private static string[] CreateImage(IDictionary<Tile, HashSet<Tile>> relativeTiles)
+        {
+            var corners = relativeTiles.Where(kvp => kvp.Value.Count == 2).Select(kvp => kvp.Key).ToList();
+            var sides = relativeTiles.Where(kvp => kvp.Value.Count == 3).Select(kvp => kvp.Key).ToList();
+            var middles = relativeTiles.Where(kvp => kvp.Value.Count == 4).Select(kvp => kvp.Key).ToList();
+
+            var sideLength = (long) Math.Sqrt(relativeTiles.Count);
+
+            var tiles = new Tile[sideLength, sideLength];
+
+            for (var row = 0; row < sideLength; row++)
+            for (var column = 0; column < sideLength; column++)
+            {
+                if (row == 0)
+                {
+                    if (column == 0)
+                    {
+                        // top-left
+                        tiles[row, column] = corners[0];
+                        corners.Remove(corners[0]);
+                    }
+                    else if (column == sideLength - 1)
+                    {
+                        // top-right
+                        var corner = corners.First(t => relativeTiles[t].Contains(tiles[row, column - 1]));
+                        tiles[row, column] = corner;
+                        corners.Remove(corner);
+                    }
+                    else
+                    {
+                        // top edge
+                        var edge = sides.First(t => relativeTiles[t].Contains(tiles[row, column - 1]));
+                        tiles[row, column] = edge;
+                        sides.Remove(edge);
+                    }
+                }
+                else if (row == sideLength - 1)
+                {
+                    if (column == 0)
+                    {
+                        // bottom-left
+                        var corner = corners.First(t => relativeTiles[t].Contains(tiles[row - 1, column]));
+                        tiles[row, column] = corner;
+                        corners.Remove(corner);
+                    }
+                    else if (column == sideLength - 1)
+                    {
+                        // bottom-right
+                        var corner = corners.First(t => relativeTiles[t].Contains(tiles[row - 1, column]));
+                        tiles[row, column] = corner;
+                        corners.Remove(corner);
+                    }
+                    else
+                    {
+                        // bottom edge
+                        var edge = sides.First(t => relativeTiles[t].Contains(tiles[row, column - 1]) && relativeTiles[t].Contains(tiles[row - 1, column]));
+                        tiles[row, column] = edge;
+                        sides.Remove(edge);
+                    }
+                }
+                else if (column == 0)
+                {
+                    // left edge
+                    var edge = sides.First(t => relativeTiles[t].Contains(tiles[row - 1, column]));
+                    tiles[row, column] = edge;
+                    sides.Remove(edge);
+                }
+                else if (column == sideLength - 1)
+                {
+                    // right edge
+                    var edge = sides.First(t => relativeTiles[t].Contains(tiles[row, column - 1]) && relativeTiles[t].Contains(tiles[row - 1, column]));
+                    tiles[row, column] = edge;
+                    sides.Remove(edge);
+                }
+                else
+                {
+                    // middle
+                    var middle = middles.First(t => relativeTiles[t].Contains(tiles[row, column - 1]) && relativeTiles[t].Contains(tiles[row - 1, column]));
+                    tiles[row, column] = middle;
+                    middles.Remove(middle);
+                }
+            }
+
+            for (var row = 0; row < sideLength - 1; row++)
+            for (var column = 0; column < sideLength - 1; column++)
+            {
+                var tile = tiles[row, column];
+                var tileRight = tiles[row, column + 1];
+                var tileDown = tiles[row + 1, column];
+                var oriented = tile.Orientations.Single(o => tileRight.Orientations.Any(o.MatchesRight) && tileDown.Orientations.Any(o.MatchesBottom));
+                tiles[row, column] = oriented;
+            }
+
+            for (var column = 0; column < sideLength - 1; column++)
+            {
+                var row = sideLength - 1;
+                var tile = tiles[row, column];
+                var tileRight = tiles[row, column + 1];
+                var tileUp = tiles[row - 1, column];
+                var oriented = tile.Orientations.Single(o => tileRight.Orientations.Any(o.MatchesRight) && tileUp.Orientations.Any(o.MatchesTop));
+                tiles[row, column] = oriented;
+            }
+
+            for (var row = 0; row < sideLength - 1; row++)
+            {
+                var column = sideLength - 1;
+                var tile = tiles[row, column];
+                var tileLeft = tiles[row, column - 1];
+                var tileDown = tiles[row + 1, column];
+                var oriented = tile.Orientations.Single(o => tileLeft.Orientations.Any(o.MatchesLeft) && tileDown.Orientations.Any(o.MatchesBottom));
+                tiles[row, column] = oriented;
+            }
+
+            {
+                var row = sideLength - 1;
+                var column = sideLength - 1;
+                var tile = tiles[row, column];
+                var tileLeft = tiles[row, column - 1];
+                var tileUp = tiles[row - 1, column];
+                var oriented = tile.Orientations.Single(o => tileLeft.Orientations.Any(o.MatchesLeft) && tileUp.Orientations.Any(o.MatchesTop));
+                tiles[row, column] = oriented;
+            }
+
+            for (var row = 0; row < sideLength; row++)
+            for (var column = 0; column < sideLength; column++)
+            {
+                tiles[row, column] = tiles[row, column].WithoutBorder();
+            }
+
+            var tileSize = tiles[0, 0].Content.Length;
+            List<string> wholeImage = new();
+            for (var row = 0; row < sideLength; row++)
+            for (var tileRow = 0; tileRow < tileSize; tileRow++)
+            {
+                var sb = new StringBuilder();
+                for (var column = 0; column < sideLength; column++)
+                {
+                    var tile = tiles[row, column];
+                    sb.Append(tile.Content[tileRow]);
+                }
+
+                wholeImage.Add(sb.ToString());
+            }
+
+            return wholeImage.ToArray();
+        }
+
+        private static readonly Regex SeaMonster1 = new(@"^..................#.", RegexOptions.Compiled);
+        private static readonly Regex SeaMonster2 = new(@"^#....##....##....###", RegexOptions.Compiled);
+        private static readonly Regex SeaMonster3 = new(@"^.#..#..#..#..#..#...", RegexOptions.Compiled);
+
+        private static long CountSeaMonsters(string[] image)
+        {
+            var seaMonsters = 0L;
+            for (var row = 0; row < image.Length - 2; row++)
+            for (var column = 0; column < image[row].Length - 19; column++)
+            {
+                if (SeaMonster1.IsMatch(image[row][column..]) &&
+                    SeaMonster2.IsMatch(image[row + 1][column..]) &&
+                    SeaMonster3.IsMatch(image[row + 2][column..]))
+                {
+                    seaMonsters++;
+                }
+            }
+
+            return seaMonsters;
+        }
+
+        private static long CountHashes(string[] image) =>
+            image.Sum(row => row.Count(c => c == '#'));
+
+        private static Dictionary<Tile, HashSet<Tile>> RelativeTiles(string[] input)
         {
             var tiles = SplitOnBlank(input).Select(Tile.Create).ToArray();
 
-            var relativeTiles = tiles.ToDictionary(
+            return tiles.ToDictionary(
                 t => t,
-                t => tiles.Where(o => t != o && t.IsNeighbour(o)).ToArray()
+                t => tiles.Where(o => t != o && t.IsNeighbour(o)).ToHashSet()
             );
-
-            var corners = relativeTiles.Where(kvp => kvp.Value.Length == 2).ToArray();
-            return corners.Aggregate(1L, (product, current) => product * current.Key.Id);
         }
 
         private sealed record Tile(long Id, string[] Content)
@@ -41,6 +244,12 @@ namespace AdventOfCode2020
             {
                 var id = long.Parse(IdFormat.Match(input[0]).Groups["id"].Value);
                 return new Tile(id, input.Skip(1).ToArray());
+            }
+
+            public Tile WithoutBorder()
+            {
+                var contentWithoutBorder = Content.Skip(1).Take(Content.Length - 2).Select(row => row[1..^1]).ToArray();
+                return this with {Content = contentWithoutBorder};
             }
 
             public IEnumerable<Tile> Orientations
