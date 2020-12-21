@@ -33,100 +33,63 @@ namespace AdventOfCode2020
             Assert.AreEqual("mxmxvkd,sqjhc,fvjkl", DangerousIngredients(Day21SampleInput));
         }
 
+        private static readonly Regex Format = new(@"^(?<ingredients>.*) \(contains (?<allergens>.*)\)$", RegexOptions.Compiled);
+
         private static string DangerousIngredients(string[] input)
         {
-            var foods = ParseFoods().ToArray();
-            var possibleAllergens = PossibleAllergens();
-            var (allergenFree, alergens) = Allergens();
+            var foods = ParseFoods(input).ToArray();
+            var possibleAllergens = PossibleAllergens(foods);
+            var (_, allergens) = Allergens(foods, possibleAllergens);
 
-            return string.Join(",", alergens.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value));
-
-
-            IEnumerable<Food> ParseFoods()
-            {
-                foreach (var line in input)
-                {
-                    var match = Format.Match(line);
-                    yield return new(match.Groups["ingredients"].Value.Split(' ').ToHashSet(), match.Groups["allergens"].Value.Split(", ").ToHashSet());
-                }
-            }
-
-            IDictionary<string, ISet<string>> PossibleAllergens() =>
-                foods.SelectMany(f => f.Allergens).Distinct().ToDictionary(a => a, a =>
-                {
-                    var fds = foods.Where(f => f.Allergens.Contains(a)).ToArray();
-                    return fds.Aggregate(fds.First().Ingredients, (intersection, current) => intersection.Intersect(current.Ingredients).ToHashSet());
-                });
-
-            (ISet<string> allergenFree, IDictionary<string, string> allergens) Allergens()
-            {
-                Dictionary<string, string> alergs = new();
-                var remaining = possibleAllergens.ToHashSet();
-                while (remaining.Any(kvp => kvp.Value.Count > 0))
-                {
-                    var a = remaining.Where(kvp => kvp.Value.Count > 0).OrderBy(kvp => kvp.Value.Count).First();
-                    if (a.Value.Count != 1) throw new InvalidOperationException("No single count left");
-                    remaining.Remove(a);
-                    var al = a.Value.Single();
-                    foreach (var x in remaining)
-                    {
-                        x.Value.Remove(al);
-                    }
-
-                    alergs.Add(a.Key, al);
-                }
-
-                return (foods.SelectMany(f => f.Ingredients).Distinct().Except(alergs.Values).ToHashSet(), alergs);
-            }
+            return string.Join(",", allergens.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value));
         }
-
-        private static readonly Regex Format = new(@"^(?<ingredients>.*) \(contains (?<allergens>.*)\)$", RegexOptions.Compiled);
 
         private static long AllergenFreeCount(string[] input)
         {
-            var foods = ParseFoods().ToArray();
-            var possibleAllergens = PossibleAllergens();
-            var (allergenFree, alergens) = Allergens();
+            var foods = ParseFoods(input).ToArray();
+            var possibleAllergens = PossibleAllergens(foods);
+            var (allergenFree, _) = Allergens(foods, possibleAllergens);
 
             var ingredients = foods.SelectMany(f => f.Ingredients);
             return ingredients.Count(allergenFree.Contains);
+        }
 
-            IEnumerable<Food> ParseFoods()
+
+        private static IEnumerable<Food> ParseFoods(string[] input)
+        {
+            foreach (var line in input)
             {
-                foreach (var line in input)
+                var match = Format.Match(line);
+                yield return new(match.Groups["ingredients"].Value.Split(' ').ToHashSet(), match.Groups["allergens"].Value.Split(", ").ToHashSet());
+            }
+        }
+
+        private static IDictionary<string, ISet<string>> PossibleAllergens(Food[] foods) =>
+            foods.SelectMany(f => f.Allergens).Distinct().ToDictionary(a => a, a =>
+            {
+                var fds = foods.Where(f => f.Allergens.Contains(a)).ToArray();
+                return fds.Aggregate(fds.First().Ingredients, (intersection, current) => intersection.Intersect(current.Ingredients).ToHashSet());
+            });
+
+        private static (ISet<string> allergenFree, IDictionary<string, string> allergens) Allergens(Food[] foods, IDictionary<string, ISet<string>> possibleAllergens)
+        {
+            Dictionary<string, string> allergens = new();
+            var remaining = possibleAllergens.ToHashSet();
+            while (remaining.Any(kvp => kvp.Value.Count > 0))
+            {
+                var a = remaining.Where(kvp => kvp.Value.Count > 0).OrderBy(kvp => kvp.Value.Count).First();
+                if (a.Value.Count != 1) throw new InvalidOperationException("No single count left");
+                remaining.Remove(a);
+                var al = a.Value.Single();
+                foreach (var x in remaining)
                 {
-                    var match = Format.Match(line);
-                    yield return new(match.Groups["ingredients"].Value.Split(' ').ToHashSet(), match.Groups["allergens"].Value.Split(", ").ToHashSet());
+                    x.Value.Remove(al);
                 }
+
+                allergens.Add(a.Key, al);
             }
 
-            IDictionary<string, ISet<string>> PossibleAllergens() =>
-                foods.SelectMany(f => f.Allergens).Distinct().ToDictionary(a => a, a =>
-                {
-                    var fds = foods.Where(f => f.Allergens.Contains(a)).ToArray();
-                    return fds.Aggregate(fds.First().Ingredients, (intersection, current) => intersection.Intersect(current.Ingredients).ToHashSet());
-                });
-
-            (ISet<string> allergenFree, IDictionary<string, string> allergens) Allergens()
-            {
-                Dictionary<string, string> alergs = new();
-                var remaining = possibleAllergens.ToHashSet();
-                while (remaining.Any(kvp => kvp.Value.Count > 0))
-                {
-                    var a = remaining.Where(kvp => kvp.Value.Count > 0).OrderBy(kvp => kvp.Value.Count).First();
-                    if (a.Value.Count != 1) throw new InvalidOperationException("No single count left");
-                    remaining.Remove(a);
-                    var al = a.Value.Single();
-                    foreach (var x in remaining)
-                    {
-                        x.Value.Remove(al);
-                    }
-
-                    alergs.Add(a.Key, al);
-                }
-
-                return (foods.SelectMany(f => f.Ingredients).Distinct().Except(alergs.Values).ToHashSet(), alergs);
-            }
+            return (foods.SelectMany(f => f.Ingredients).Distinct().Except(allergens.Values).ToHashSet(), allergens);
         }
 
         private sealed record Food(ISet<string> Ingredients, ISet<string> Allergens);
