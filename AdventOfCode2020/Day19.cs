@@ -156,7 +156,7 @@ namespace AdventOfCode2020
             "bababa",
             "abbbab",
             "aaabbb",
-            "aaaabbb",
+            "aaaabbb"
         };
 
         private static readonly string[] Day19SampleInput2 =

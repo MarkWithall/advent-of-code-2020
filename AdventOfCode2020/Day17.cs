@@ -43,7 +43,7 @@ namespace AdventOfCode2020
 
             return grid.Values.Count(v => v);
 
-            Dictionary<(long, long, long), bool> Simulate(Dictionary<(long x, long y, long z), bool> initialGrid)
+            static Dictionary<(long, long, long), bool> Simulate(Dictionary<(long x, long y, long z), bool> initialGrid)
             {
                 Dictionary<(long, long, long), bool> newGrid = new();
 
@@ -101,7 +101,7 @@ namespace AdventOfCode2020
 
             return grid.Values.Count(v => v);
 
-            Dictionary<(long, long, long, long), bool> Simulate(Dictionary<(long x, long y, long z, long w), bool> initialGrid)
+            static Dictionary<(long, long, long, long), bool> Simulate(Dictionary<(long x, long y, long z, long w), bool> initialGrid)
             {
                 Dictionary<(long, long, long, long), bool> newGrid = new();
 
