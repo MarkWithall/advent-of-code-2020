@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
 
@@ -19,11 +20,27 @@ namespace AdventOfCode2020
             Assert.AreEqual(306, WinningScore(Day22SampleInput));
         }
 
+        [Test, Ignore("Slow")]
+        public void Part2()
+        {
+            Assert.AreEqual(34031, WinningRecursiveScore(Day22Input));
+        }
+
+        [Test]
+        public void Part2Sample()
+        {
+            Assert.AreEqual(291, WinningRecursiveScore(Day22SampleInput));
+        }
+
+        [Test]
+        public void Part2Sample2()
+        {
+            Assert.AreEqual(105, WinningRecursiveScore(Day22SampleInput2));
+        }
+
         private static long WinningScore(string[] input)
         {
-            var deckSize = (input.Length - 1) / 2;
-            Queue<long> deck1 = new(input.Take(deckSize).Skip(1).Select(long.Parse));
-            Queue<long> deck2 = new(input.Skip(deckSize + 1).Take(deckSize).Skip(1).Select(long.Parse));
+            var (deck1, deck2) = ReadDecks(input);
 
             while (deck1.Any() && deck2.Any())
             {
@@ -42,22 +59,78 @@ namespace AdventOfCode2020
                 }
             }
 
-            var winningScore = CalculateScore(deck1.Any() ? deck1 : deck2);
+            return CalculateScore(deck1.Any() ? deck1 : deck2);
+        }
 
-            return winningScore;
+        private static long WinningRecursiveScore(string[] input)
+        {
+            var (deck1, deck2) = ReadDecks(input);
+            var winner = PlayGame(deck1, deck2);
+            return CalculateScore(winner == 1 ? deck1 : deck2);
+        }
 
-            static long CalculateScore(Queue<long> deck)
+        private static long PlayGame(Queue<long> deck1, Queue<long> deck2)
+        {
+            var previousRounds = new HashSet<string>();
+
+            while (deck1.Any() && deck2.Any())
             {
-                var score = 0L;
-                for (var i = 0; i < deck.Count; i++)
+                // Check for repeated game state
+                var gameState = string.Join(",", deck1) + ":" + string.Join(",", deck2);
+                Debug.WriteLine(gameState);
+                if (previousRounds.Contains(gameState))
                 {
-                    var card = deck.ElementAt(i);
-                    long multplier = deck.Count - i;
-                    score += card * multplier;
+                    return 1;
                 }
 
-                return score;
+                previousRounds.Add(gameState);
+
+                // Draw cards
+                var card1 = deck1.Dequeue();
+                var card2 = deck2.Dequeue();
+
+                // Check winner
+                var winner = deck1.Count >= card1 && deck2.Count >= card2
+                    // Play recursive game
+                    ? PlayGame(new Queue<long>(deck1.Take((int) card1)), new Queue<long>(deck2.Take((int) card2)))
+                    : card1 > card2
+                        ? 1
+                        : 2;
+
+                // Update decks
+                if (winner == 1)
+                {
+                    deck1.Enqueue(card1);
+                    deck1.Enqueue(card2);
+                }
+                else
+                {
+                    deck2.Enqueue(card2);
+                    deck2.Enqueue(card1);
+                }
             }
+
+            return deck1.Any() ? 1 : 2;
+        }
+
+        private static (Queue<long> deck1, Queue<long> deck2) ReadDecks(string[] input)
+        {
+            Queue<long> deck1 = new(input.TakeWhile(i => i != "").Skip(1).Select(long.Parse));
+            Queue<long> deck2 = new(input.Skip(deck1.Count + 2).Skip(1).Select(long.Parse));
+            return (deck1, deck2);
+        }
+
+        private static long CalculateScore(Queue<long> deck)
+        {
+            var score = 0L;
+            for (var i = 0; i < deck.Count; i++)
+            {
+                var card = deck.ElementAt(i);
+                long multplier = deck.Count - i;
+                score += card * multplier;
+            }
+
+            return score;
         }
 
         private static readonly string[] Day22SampleInput =
@@ -75,6 +148,18 @@ namespace AdventOfCode2020
             "4",
             "7",
             "10"
+        };
+
+        private static readonly string[] Day22SampleInput2 =
+        {
+            "Player 1:",
+            "43",
+            "19",
+            "",
+            "Player 2:",
+            "2",
+            "29",
+            "14"
         };
 
         private static readonly string[] Day22Input =
