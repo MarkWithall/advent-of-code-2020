@@ -20,9 +20,22 @@ namespace AdventOfCode2020
             Assert.AreEqual(expectedOutput, MoveCups(input, moves));
         }
 
+
+        [Test, Ignore("Slow")]
+        public void Part2()
+        {
+            Assert.AreEqual(836763710, FindHiddenStars("389547612"));
+        }
+
+        [Test, Ignore("Slow")]
+        public void Part2Sample()
+        {
+            Assert.AreEqual(149245887792, FindHiddenStars("389125467"));
+        }
+
         private static string MoveCups(string initialPosition, int moves)
         {
-            var cups = new Cups(initialPosition.Select(c => int.Parse(c.ToString())));
+            var cups = new Cups(initialPosition.Select(c => (long) int.Parse(c.ToString())));
 
             for (var i = 0; i < moves; i++)
             {
@@ -33,56 +46,93 @@ namespace AdventOfCode2020
             return cups.CurrentState;
         }
 
-        private sealed class Cups
+        private static long FindHiddenStars(string initialPosition)
         {
-            private readonly List<int> _cups;
-            private int _currentCup;
+            var cups = new Cups(initialPosition.Select(c => int.Parse(c.ToString())).Concat(Enumerable.Range(10, 999_991)).Select(i => (long) i));
 
-            public Cups(IEnumerable<int> cups)
+            for (var i = 0; i < 10_000_000; i++)
             {
-                _cups = cups.ToList();
-                _currentCup = _cups[0];
+                var removed = cups.RemoveThreeClockwiseOfCurrent();
+                cups.InsertCups(removed);
             }
 
-            public IEnumerable<int> RemoveThreeClockwiseOfCurrent()
+            return cups.ProductOfCupsClockwiseOfCup1();
+        }
+
+        private sealed class Cups
+        {
+            private readonly LinkedList<long> _cups;
+            private LinkedListNode<long> _currentCup;
+            private readonly Dictionary<long, LinkedListNode<long>> _nodeLookup = new();
+
+            public Cups(IEnumerable<long> cups)
             {
-                var currentCupIndex = _cups.IndexOf(_currentCup);
-
-                var a = (currentCupIndex + 1) % _cups.Count;
-                var b = (currentCupIndex + 2) % _cups.Count;
-                var c = (currentCupIndex + 3) % _cups.Count;
-
-                var removed = new[] {_cups[a], _cups[b], _cups[c]};
-
-                foreach (var i in new[] {a, b, c}.OrderByDescending(i => i))
+                _cups = new LinkedList<long>(cups);
+                _currentCup = _cups.First!;
+                for (var n = _cups.First; n is not null; n = n.Next)
                 {
-                    _cups.RemoveAt(i);
+                    _nodeLookup.Add(n.Value, n);
                 }
+            }
+
+            public long[] RemoveThreeClockwiseOfCurrent()
+            {
+                var a = Next(_currentCup);
+                var b = Next(a);
+                var c = Next(b);
+
+                var removed = new[] {a.Value, b.Value, c.Value};
+
+                _nodeLookup.Remove(a.Value);
+                _nodeLookup.Remove(b.Value);
+                _nodeLookup.Remove(c.Value);
+
+                _cups.Remove(a);
+                _cups.Remove(b);
+                _cups.Remove(c);
 
                 return removed;
             }
 
-            public void InsertCups(IEnumerable<int> cups)
+            public void InsertCups(long[] cups)
             {
-                var destinationCup = _currentCup;
-                do
+                var previousRemainingCup = PreviousRemainingCup(cups);
+                foreach (var i in cups.Reverse())
                 {
-                    destinationCup = destinationCup - 1;
-                    if (destinationCup < 1)
-                    {
-                        destinationCup = _cups.Max();
-                    }
-                } while (!_cups.Contains(destinationCup));
+                    var newNode = _cups.AddAfter(previousRemainingCup, i);
+                    _nodeLookup.Add(i, newNode);
+                }
 
-                var destinationIndex = (_cups.IndexOf(destinationCup) + 1) % _cups.Count;
-                _cups.InsertRange(destinationIndex, cups);
-
-                var currentCupIndex = _cups.IndexOf(_currentCup);
-                _currentCup = _cups[(currentCupIndex + 1) % _cups.Count];
+                _currentCup = Next(_currentCup);
             }
 
             public string CurrentState =>
                 string.Join("", _cups.SkipWhile(c => c != 1).Skip(1).Concat(_cups.TakeWhile(c => c != 1)));
+
+            public long ProductOfCupsClockwiseOfCup1()
+            {
+                var cup1 = _nodeLookup[1];
+                var a = Next(cup1);
+                var b = Next(a);
+                return a.Value * b.Value;
+            }
+
+            private LinkedListNode<long> PreviousRemainingCup(long[] excluding)
+            {
+                var destinationCup = _currentCup.Value;
+                do
+                {
+                    destinationCup -= 1;
+                    if (destinationCup < 1)
+                    {
+                        destinationCup = _cups.Max();
+                    }
+                } while (excluding.Contains(destinationCup));
+
+                return _nodeLookup[destinationCup];
+            }
+
+            private LinkedListNode<long> Next(LinkedListNode<long> node) => node.Next ?? _cups.First!;
         }
     }
 }
