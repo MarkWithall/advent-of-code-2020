@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 
 namespace AdventOfCode2020
@@ -21,7 +22,7 @@ namespace AdventOfCode2020
 
         private static string MoveCups(string initialPosition, int moves)
         {
-            var cups = new Cups(initialPosition);
+            var cups = new Cups(initialPosition.Select(c => int.Parse(c.ToString())));
 
             for (var i = 0; i < moves; i++)
             {
@@ -34,54 +35,54 @@ namespace AdventOfCode2020
 
         private sealed class Cups
         {
-            private string _cups;
-            private char _currentCup;
+            private readonly List<int> _cups;
+            private int _currentCup;
 
-            public Cups(string cups)
+            public Cups(IEnumerable<int> cups)
             {
-                _cups = cups;
+                _cups = cups.ToList();
                 _currentCup = _cups[0];
             }
 
-            public string RemoveThreeClockwiseOfCurrent()
+            public IEnumerable<int> RemoveThreeClockwiseOfCurrent()
             {
                 var currentCupIndex = _cups.IndexOf(_currentCup);
 
-                var a = (currentCupIndex + 1) % _cups.Length;
-                var b = (currentCupIndex + 2) % _cups.Length;
-                var c = (currentCupIndex + 3) % _cups.Length;
+                var a = (currentCupIndex + 1) % _cups.Count;
+                var b = (currentCupIndex + 2) % _cups.Count;
+                var c = (currentCupIndex + 3) % _cups.Count;
 
-                var removed = new string(new[] {_cups[a], _cups[b], _cups[c]});
+                var removed = new[] {_cups[a], _cups[b], _cups[c]};
 
                 foreach (var i in new[] {a, b, c}.OrderByDescending(i => i))
                 {
-                    _cups = _cups.Remove(i, 1);
+                    _cups.RemoveAt(i);
                 }
 
                 return removed;
             }
 
-            public void InsertCups(string cups)
+            public void InsertCups(IEnumerable<int> cups)
             {
                 var destinationCup = _currentCup;
                 do
                 {
-                    destinationCup = (char) (destinationCup - 1);
-                    if (destinationCup < '0')
+                    destinationCup = destinationCup - 1;
+                    if (destinationCup < 1)
                     {
-                        destinationCup = (char) (destinationCup + 10);
+                        destinationCup = _cups.Max();
                     }
                 } while (!_cups.Contains(destinationCup));
 
-                var destinationIndex = (_cups.IndexOf(destinationCup) + 1) % _cups.Length;
-                _cups = _cups.Insert(destinationIndex, cups);
+                var destinationIndex = (_cups.IndexOf(destinationCup) + 1) % _cups.Count;
+                _cups.InsertRange(destinationIndex, cups);
 
                 var currentCupIndex = _cups.IndexOf(_currentCup);
-                _currentCup = _cups[(currentCupIndex + 1) % _cups.Length];
+                _currentCup = _cups[(currentCupIndex + 1) % _cups.Count];
             }
 
             public string CurrentState =>
-                string.Join("", _cups.SkipWhile(c => c != '1').Skip(1).Concat(_cups.TakeWhile(c => c != '1')));
+                string.Join("", _cups.SkipWhile(c => c != 1).Skip(1).Concat(_cups.TakeWhile(c => c != 1)));
         }
     }
 }
