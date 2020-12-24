@@ -20,12 +20,90 @@ namespace AdventOfCode2020
             Assert.AreEqual(10, CountBlackTiles(Day24SampleInput));
         }
 
-        private static int CountBlackTiles(string[] input)
+        [Test, Ignore("Slow")]
+        public void Part2()
+        {
+            Assert.AreEqual(3979, CountBlackTiles(Day24Input, 100));
+        }
+
+        [Test]
+        public void Part2Sample()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(15, CountBlackTiles(Day24SampleInput, 1));
+                Assert.AreEqual(12, CountBlackTiles(Day24SampleInput, 2));
+                Assert.AreEqual(37, CountBlackTiles(Day24SampleInput, 10));
+                Assert.AreEqual(132, CountBlackTiles(Day24SampleInput, 20));
+                //Assert.AreEqual(259, CountBlackTiles(Day24SampleInput, 30));
+                //Assert.AreEqual(566, CountBlackTiles(Day24SampleInput, 50));
+                //Assert.AreEqual(1106, CountBlackTiles(Day24SampleInput, 70));
+                //Assert.AreEqual(1373, CountBlackTiles(Day24SampleInput, 80));
+                //Assert.AreEqual(1844, CountBlackTiles(Day24SampleInput, 90));
+                //Assert.AreEqual(2208, CountBlackTiles(Day24SampleInput, 100));
+            });
+        }
+
+        private static int CountBlackTiles(string[] input, int days = 0)
         {
             var tilePositions = input.Select(p => ReadPosition(p).ToArray()).ToArray();
             var tileCoordinates = tilePositions.Select(FindCoordinate).ToArray();
+            HashSet<(int x, int y, int z)> blackTiles = new();
 
-            return tileCoordinates.GroupBy(c => c).Count(g => g.Count() % 2 == 1);
+            foreach (var coordinate in tileCoordinates)
+            {
+                if (blackTiles.Contains(coordinate))
+                {
+                    blackTiles.Remove(coordinate);
+                }
+                else
+                {
+                    blackTiles.Add(coordinate);
+                }
+            }
+
+            for (var day = 0; day < days; day++)
+            {
+                HashSet<(int x, int y, int z)> nextDay = new();
+
+                var minX = blackTiles.Min(c => c.x) - 1;
+                var maxX = blackTiles.Max(c => c.x) + 1;
+
+                var minY = blackTiles.Min(c => c.y) - 1;
+                var maxY = blackTiles.Max(c => c.y) + 1;
+
+                var minZ = blackTiles.Min(c => c.z) - 1;
+                var maxZ = blackTiles.Max(c => c.z) + 1;
+
+                for (var x = minX; x <= maxX; x++)
+                for (var y = minY; y <= maxY; y++)
+                for (var z = minZ; z <= maxZ; z++)
+                {
+                    var coordinate = (x, y, z);
+                    var blackNeighbours = CountBlackNeighbours(coordinate, blackTiles);
+
+                    // Currently black
+                    if (blackTiles.Contains(coordinate))
+                    {
+                        if (blackNeighbours == 1 || blackNeighbours == 2)
+                        {
+                            nextDay.Add(coordinate);
+                        }
+                    }
+                    // Currently White
+                    else
+                    {
+                        if (blackNeighbours == 2)
+                        {
+                            nextDay.Add(coordinate);
+                        }
+                    }
+                }
+
+                blackTiles = nextDay;
+            }
+
+            return blackTiles.Count;
 
             static IEnumerable<string> ReadPosition(string positionString)
             {
@@ -64,11 +142,26 @@ namespace AdventOfCode2020
                 }
 
                 return coordinate;
+            }
 
-                static (int x, int y, int z) Add((int x, int y, int z) a, (int x, int y, int z) b)
+            static int CountBlackNeighbours((int x, int y, int z) coordinate, ISet<(int x, int y, int z)> blackTiles)
+            {
+                (int x, int y, int z)[] neighbours =
                 {
-                    return (a.x + b.x, a.y + b.y, a.z + b.z);
-                }
+                    Add(coordinate, (1, -1, 0)),
+                    Add(coordinate, (0, -1, 1)),
+                    Add(coordinate, (-1, 0, 1)),
+                    Add(coordinate, (-1, 1, 0)),
+                    Add(coordinate, (0, 1, -1)),
+                    Add(coordinate, (1, 0, -1))
+                };
+
+                return neighbours.Count(blackTiles.Contains);
+            }
+
+            static (int x, int y, int z) Add((int x, int y, int z) a, (int x, int y, int z) b)
+            {
+                return (a.x + b.x, a.y + b.y, a.z + b.z);
             }
         }
 
