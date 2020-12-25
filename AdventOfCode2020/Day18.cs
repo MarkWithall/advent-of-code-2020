@@ -226,12 +226,12 @@ namespace AdventOfCode2020
             long Evaluate();
         }
 
-        private record NumberNode(long Number) : INode
+        private sealed record NumberNode(long Number) : INode
         {
             public long Evaluate() => Number;
         }
 
-        private record BinaryOpNode(INode Lhs, INode Rhs, Func<long, long, long> Op) : INode
+        private sealed record BinaryOpNode(INode Lhs, INode Rhs, Func<long, long, long> Op) : INode
         {
             public long Evaluate() => Op(Lhs.Evaluate(), Rhs.Evaluate());
         }
@@ -240,15 +240,15 @@ namespace AdventOfCode2020
         {
         }
 
-        private record NumberToken(long Value) : IToken;
+        private sealed record NumberToken(long Value) : IToken;
 
-        private record OpenParenthesisToken : IToken;
+        private sealed record OpenParenthesisToken : IToken;
 
-        private record CloseParenthesisToken : IToken;
+        private sealed record CloseParenthesisToken : IToken;
 
-        private record PlusToken : IToken;
+        private sealed record PlusToken : IToken;
 
-        private record MultiplyToken : IToken;
+        private sealed record MultiplyToken : IToken;
 
         private static readonly string[] Day18Input =
         {
