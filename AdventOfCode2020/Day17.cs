@@ -19,13 +19,13 @@ namespace AdventOfCode2020
             Assert.AreEqual(112, ActiveCubes3D(Day17SampleInput, 6));
         }
 
-        [Test, Ignore("Slow")]
+        [Test, Category("slow")]
         public void Part2()
         {
             Assert.AreEqual(1680, ActiveCubes4D(Day17Input, 6));
         }
 
-        [Test, Ignore("Slow")]
+        [Test, Category("slow")]
         public void Part2Sample()
         {
             Assert.AreEqual(848, ActiveCubes4D(Day17SampleInput, 6));

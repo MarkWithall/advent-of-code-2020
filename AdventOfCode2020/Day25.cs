@@ -11,7 +11,7 @@ namespace AdventOfCode2020
         private const long PublicKey1 = 11562782;
         private const long PublicKey2 = 18108497;
 
-        [Test, Ignore("Slow")]
+        [Test, Category("slow")]
         public void Part1()
         {
             Assert.AreEqual(2947148, EncryptionKey(PublicKey1, PublicKey2));

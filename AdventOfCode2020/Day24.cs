@@ -20,7 +20,7 @@ namespace AdventOfCode2020
             Assert.AreEqual(10, CountBlackTiles(Day24SampleInput));
         }
 
-        [Test, Ignore("Slow")]
+        [Test, Category("slow")]
         public void Part2()
         {
             Assert.AreEqual(3979, CountBlackTiles(Day24Input, 100));

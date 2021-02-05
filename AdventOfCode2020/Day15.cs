@@ -13,13 +13,13 @@ namespace AdventOfCode2020
             Assert.AreEqual(412, NthNumberSpoken("10,16,6,0,1,17", 2020));
         }
 
-        [Test, Ignore("Slow")]
+        [Test, Category("slow")]
         public void Part2()
         {
             Assert.AreEqual(243, NthNumberSpoken("10,16,6,0,1,17", 30000000));
         }
 
-        [Ignore("Slow")]
+        [Category("slow")]
         [TestCase("0,3,6", 436, 175594)]
         [TestCase("1,3,2", 1, 2578)]
         [TestCase("2,1,3", 10, 3544142)]

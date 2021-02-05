@@ -21,13 +21,13 @@ namespace AdventOfCode2020
         }
 
 
-        [Test, Ignore("Slow")]
+        [Test, Category("slow")]
         public void Part2()
         {
             Assert.AreEqual(836763710, FindHiddenStars("389547612"));
         }
 
-        [Test, Ignore("Slow")]
+        [Test, Category("slow")]
         public void Part2Sample()
         {
             Assert.AreEqual(149245887792, FindHiddenStars("389125467"));

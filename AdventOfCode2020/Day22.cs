@@ -20,7 +20,7 @@ namespace AdventOfCode2020
             Assert.AreEqual(306, WinningScore(Day22SampleInput));
         }
 
-        [Test, Ignore("Slow")]
+        [Test, Category("slow")]
         public void Part2()
         {
             Assert.AreEqual(34031, WinningRecursiveScore(Day22Input));

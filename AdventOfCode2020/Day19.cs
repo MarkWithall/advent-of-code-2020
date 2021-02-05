@@ -8,7 +8,7 @@ namespace AdventOfCode2020
     [TestFixture(TestName = "Day 19: Monster Messages")]
     public sealed class Day19
     {
-        [Test, Ignore("Slow")]
+        [Test, Category("slow")]
         public void Part1()
         {
             Assert.AreEqual(156, ValidCount(Day19Input1));
@@ -20,7 +20,7 @@ namespace AdventOfCode2020
             Assert.AreEqual(2, ValidCount(Day19SampleInput1));
         }
 
-        [Test, Ignore("Slow")]
+        [Test, Category("slow")]
         public void Part2()
         {
             Assert.AreEqual(363, ValidCount(Day19Input2));

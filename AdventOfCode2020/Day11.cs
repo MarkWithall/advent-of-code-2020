@@ -19,7 +19,7 @@ namespace AdventOfCode2020
             Assert.AreEqual(37, SimulateUntilStable(Day11SampleInput));
         }
 
-        [Test, Ignore("Slow")]
+        [Test, Category("slow")]
         public void Part2()
         {
             Assert.AreEqual(2176, SimulateUntilStable(Day11Input, false));

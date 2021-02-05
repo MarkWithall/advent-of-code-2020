@@ -11,25 +11,25 @@ namespace AdventOfCode2020
     [TestFixture(TestName = "Day 20: Jurassic Jigsaw")]
     public sealed class Day20
     {
-        [Test, Ignore("Slow")]
+        [Test, Category("slow")]
         public void Part1()
         {
             Assert.AreEqual(7492183537913, ProductOfCorners(Day20Input));
         }
 
-        [Test, Ignore("Slow")]
+        [Test, Category("slow")]
         public void Part1Sample()
         {
             Assert.AreEqual(20899048083289, ProductOfCorners(Day20SampleInput));
         }
 
-        [Test, Ignore("Slow")]
+        [Test, Category("slow")]
         public void Part2()
         {
             Assert.AreEqual(2323, WaterRoughness(Day20Input));
         }
 
-        [Test, Ignore("Slow")]
+        [Test, Category("slow")]
         public void Part2Sample()
         {
             Assert.AreEqual(273, WaterRoughness(Day20SampleInput));
